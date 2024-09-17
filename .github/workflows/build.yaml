@@ -29,7 +29,9 @@ jobs:
     - name: Clonar s3lcd
       run: git clone https://github.com/russhughes/s3lcd.git
 
-
+    - name: show CMAKE DIR
+      run: ls ${CMAKE_CURRENT_LIST_DIR}
+    
     - name: Copy tdt_config and some fonts like frozen modules
       run: |
        cp "$GITHUB_WORKSPACE/s3lcd/examples/configs/t-display-s3/tft_config.py" "$GITHUB_WORKSPACE/s3lcd/modules/"
@@ -100,12 +102,12 @@ jobs:
       run: |
         cp -r ESP32_GENERIC_S3_N16R8 micropython/ports/esp32/boards/
 
-    - name: Fusionar módulos SmartConfig y st7789
-      run: |
-        mkdir -p $GITHUB_WORKSPACE/temp_cmodule
-        cat $GITHUB_WORKSPACE/smartconfig/cmodules/micropython.cmake > $GITHUB_WORKSPACE/temp_cmodule/micropython.cmake
-        cat $GITHUB_WORKSPACE/s3lcd/src/micropython.cmake >> $GITHUB_WORKSPACE/temp_cmodule/micropython.cmake
-        cat $GITHUB_WORKSPACE/temp_cmodule/micropython.cmake
+    #- name: Fusionar módulos SmartConfig y st7789
+     # run: |
+      #  mkdir -p $GITHUB_WORKSPACE/temp_cmodule
+       # cat $GITHUB_WORKSPACE/smartconfig/cmodules/micropython.cmake > $GITHUB_WORKSPACE/temp_cmodule/micropython.cmake
+        #cat $GITHUB_WORKSPACE/s3lcd/src/micropython.cmake >> $GITHUB_WORKSPACE/temp_cmodule/micropython.cmake
+        #cat $GITHUB_WORKSPACE/temp_cmodule/micropython.cmake
 
     - name: Compile with SmartConfig
       run: |
@@ -121,6 +123,9 @@ jobs:
           -D MICROPY_FROZEN_MANIFEST="$GITHUB_WORKSPACE/s3lcd/manifest.py" \
           -B build-ESP32_GENERIC_S3_N16R8 build
 
+    - name: show CMAKE DIR
+      run: ls ${CMAKE_CURRENT_LIST_DIR}
+      
     - name: Move binaries with SmartConfig
       run: |
         mkdir -p ./artifacts
