@@ -30,7 +30,7 @@ jobs:
       run: git clone https://github.com/russhughes/s3lcd.git
 
     - name: show CMAKE DIR
-      run: ls ${CMAKE_CURRENT_LIST_DIR}
+      run: ls -R ${CMAKE_CURRENT_LIST_DIR}
     
     - name: Copy tdt_config and some fonts like frozen modules
       run: |
@@ -124,7 +124,7 @@ jobs:
           -B build-ESP32_GENERIC_S3_N16R8 build
 
     - name: show CMAKE DIR
-      run: ls ${CMAKE_CURRENT_LIST_DIR}
+      run: ls -r ${CMAKE_CURRENT_LIST_DIR}
       
     - name: Move binaries with SmartConfig
       run: |
