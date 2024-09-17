@@ -1,8 +1,13 @@
 # This top-level micropython.cmake is responsible for listing
 # the individual modules we want to include.
-
-# Add smartconfig.
-include(${CMAKE_CURRENT_LIST_DIR}/smartconfig/micropython.cmake)
+# Para smartconfig
+add_library(usermod_smartconfig INTERFACE)
+target_sources(usermod_smartconfig INTERFACE
+    # Archivos del smartconfig
+)
+target_include_directories(usermod_smartconfig INTERFACE
+    ${CMAKE_CURRENT_LIST_DIR}/smartconfig
+)
 
 # Create an INTERFACE library for our C module.
 add_library(usermod_s3lcd INTERFACE)
@@ -30,5 +35,5 @@ target_include_directories(usermod_s3lcd INTERFACE
     ${CMAKE_CURRENT_LIST_DIR}
 )
 
-# Link our INTERFACE library to the usermod target.
-target_link_libraries(usermod INTERFACE usermod_s3lcd)
+# Vincular ambos módulos
+target_link_libraries(usermod INTERFACE usermod_smartconfig usermod_s3lcd)
