@@ -61,16 +61,21 @@ jobs:
       run: |
         ./picotool/build/picotool uf2 convert ${GITHUB_WORKSPACE}/lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.elf ${GITHUB_WORKSPACE}/lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.uf2
 
-    - name: Upload firmware to GitHub Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
+    - name: Generate Tag
+      id: tag
+      run: echo "TAG_NAME=release-$(date +'%Y%m%d-%H%M')" >> $GITHUB_ENV
+
+    - name: Create Release
+      uses: marvinpinto/action-automatic-releases@latest
       with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: false
+        automatic_release_tag: ${{ env.TAG_NAME }}
+        title: "Release for version ${{ env.TAG_NAME }}"
         files: lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.uf2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
-    - uses: actions/upload-artifact@v3
-      if: ${{ env.GITHUB_EVENT_NAME }} == 'push'
-      with:
-        name: ${{ matrix.board }}.uf2
-        path: lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.uf2
+    #- uses: actions/upload-artifact@v3
+    #  if: ${{ env.GITHUB_EVENT_NAME }} == 'push'
+    #  with:
+    #    name: ${{ matrix.board }}.uf2
+    #    path: lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.uf2
