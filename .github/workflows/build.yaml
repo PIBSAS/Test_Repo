@@ -17,7 +17,7 @@ jobs:
     - name: arm-none-eabi-gcc
       uses: carlosperate/arm-none-eabi-gcc-action@v1.3.0
       with:
-        release: '9-2019-q4' # The arm-none-eabi-gcc release to use.
+        release: '9-2019-q4'
     
     - name: Initialize lv_bindings submodule
       run: |
@@ -60,8 +60,14 @@ jobs:
     - name: Convertir .elf a .uf2
       run: |
         ./picotool/build/picotool uf2 convert ${GITHUB_WORKSPACE}/lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.elf ${GITHUB_WORKSPACE}/lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.uf2
-      
-      #  ./pico-sdk/build/elf2uf2 ../lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.elf ../lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.uf2
+
+    - name: Upload firmware to GitHub Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.uf2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
     - uses: actions/upload-artifact@v3
       if: ${{ env.GITHUB_EVENT_NAME }} == 'push'
