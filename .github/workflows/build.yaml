@@ -57,7 +57,6 @@ jobs:
 
     - name: Convertir .elf a .uf2
       run: |
-        ls build
         ./pico-sdk/build/elf2uf2 ../lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.elf ../lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.uf2
     
     - uses: actions/upload-artifact@v3
