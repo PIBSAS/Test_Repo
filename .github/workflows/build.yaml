@@ -31,7 +31,7 @@ jobs:
       
     - name: Initialize Micropython submodules
       run: |
-        cd
+        lv_micropython
         make -C ports/rp2 BOARD=${{ matrix.board }} USER_C_MODULES=../../lib/lv_bindings/bindings.cmake submodules
     - name: Build mpy-cross
       run: make -j $(nproc) -C mpy-cross
