@@ -13,11 +13,6 @@ jobs:
     steps:
     - name: lv_micro
       run: git clone https://github.com/lvgl/lv_micropython.git
-
-    - name: List repository structure
-      run: |
-        cd lv_micropython
-        ls -R
       
     - name: arm-none-eabi-gcc
       uses: carlosperate/arm-none-eabi-gcc-action@v1.3.0
@@ -33,12 +28,17 @@ jobs:
       run: |
         cd lv_micropython
         make -C ports/rp2 BOARD=${{ matrix.board }} USER_C_MODULES=../../lib/lv_bindings/bindings.cmake submodules
+    
     - name: Build mpy-cross
-      run: make -j $(nproc) -C mpy-cross
+      run: |
+        cd lv_micropython
+        make -j $(nproc) -C mpy-cross
     - name: Build ${{ matrix.board }}
-      run: make -j $(nproc) -C ports/rp2 BOARD=${{ matrix.board }} USER_C_MODULES=../../lib/lv_bindings/bindings.cmake
+      run: |
+        cd lv_micropython
+        make -j $(nproc) -C ports/rp2 BOARD=${{ matrix.board }} USER_C_MODULES=../../lib/lv_bindings/bindings.cmake
     - uses: actions/upload-artifact@v3
       if: ${{ env.GITHUB_EVENT_NAME }} == 'push'
       with:
         name: ${{ matrix.board }}.hex
-        path: ports/rp2/build-${{ matrix.board }}/firmware.elf
+        path: lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.elf
