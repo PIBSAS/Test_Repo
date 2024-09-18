@@ -43,7 +43,7 @@ jobs:
       run: |
         git clone https://github.com/raspberrypi/pico-sdk.git
         cd pico-sdk
-        git submodule update --init
+        git submodule update --init lib/mbedtls
         cd ..
 
     - name: Compilar la herramienta elf2uf2
@@ -52,11 +52,12 @@ jobs:
         mkdir build
         cd build
         cmake ..
-        make elf2uf2
+        make
         cd ../..
 
     - name: Convertir .elf a .uf2
       run: |
+        ls build
         ./pico-sdk/build/elf2uf2 ../lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.elf ../lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.uf2
     
     - uses: actions/upload-artifact@v3
