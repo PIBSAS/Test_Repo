@@ -57,13 +57,7 @@ jobs:
 
     - name: Convertir .elf a .uf2
       run: |
-        ls -R pico-sdk
-        if [ -f elf2uf2 ]; then
-          ./elf2uf2 ../lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.elf ../lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.uf2
-        else
-          echo "elf2uf2 no se encontró, verifique la compilación de picotool."
-          exit 1
-        fi
+        ./pico-sdk/build/picotool/picotool uf2 convert ../lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.elf ../lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.uf2
       
       #  ./pico-sdk/build/elf2uf2 ../lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.elf ../lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.uf2
     
