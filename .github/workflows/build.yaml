@@ -29,6 +29,8 @@ jobs:
       run: |
         git clone https://github.com/lvgl/lvgl.git
         cd lvgl
+        mv lv_conf_template.h lv_conf.h
+        sed -i 's/#if 0/#if 1/' lv_conf.h
 
     - name: Clone MicroPython
       run: |
@@ -39,19 +41,19 @@ jobs:
     - name: Compile LVGL .c files to .o files for RP2040
       run: |
         cd lvgl/src
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -c -o core/lv_group.o core/lv_group.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -c -o core/lv_obj.o core/lv_obj.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -c -o core/lv_obj_class.o core/lv_obj_class.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -c -o core/lv_obj_draw.o core/lv_obj_draw.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -c -o core/lv_obj_event.o core/lv_obj_event.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -c -o core/lv_obj_id_builtin.o core/lv_obj_id_builtin.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -c -o core/lv_obj_pos.o core/lv_obj_pos.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -c -o core/lv_obj_property.o core/lv_obj_property.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -c -o core/lv_obj_scroll.o core/lv_obj_scroll.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -c -o core/lv_obj_style.o core/lv_obj_style.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -c -o core/lv_obj_style_gen.o core/lv_obj_style_gen.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -c -o core/lv_obj_tree.o core/lv_obj_tree.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -c -o core/lv_refr.o core/lv_refr.c
+        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_group.o core/lv_group.c
+        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj.o core/lv_obj.c
+        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj_class.o core/lv_obj_class.c
+        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj_draw.o core/lv_obj_draw.c
+        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj_event.o core/lv_obj_event.c
+        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj_id_builtin.o core/lv_obj_id_builtin.c
+        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj_pos.o core/lv_obj_pos.c
+        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj_property.o core/lv_obj_property.c
+        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj_scroll.o core/lv_obj_scroll.c
+        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj_style.o core/lv_obj_style.c
+        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj_style_gen.o core/lv_obj_style_gen.c
+        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj_tree.o core/lv_obj_tree.c
+        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_refr.o core/lv_refr.c
 
     - name: Create .mpy file from .o files
       run: |
