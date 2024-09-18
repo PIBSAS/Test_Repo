@@ -1,79 +1,37 @@
-name: Compile LVGL to .mpy for RP2040
+name: rp2 port
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:
+  pull_request:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        board: [PICO]
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - name: lv_micro
+      run: git clone https://github.com/lvgl/lv_micropython.git
+      
+    - name: arm-none-eabi-gcc
+      uses: carlosperate/arm-none-eabi-gcc-action@v1.3.0
       with:
-        python-version: '3.x'
-
-    - name: Install dependencies
+        release: '9-2019-q4' # The arm-none-eabi-gcc release to use.
+    
+    - name: Initialize lv_bindings submodule
       run: |
-        sudo apt update
-        sudo apt install -y gcc-arm-none-eabi
-        pip install pyelftools
-
-    - name: Clone LVGL
-      run: |
-        git clone https://github.com/lvgl/lvgl.git
-        cd lvgl
-        mv lv_conf_template.h lv_conf.h
-        sed -i 's/#if 0/#if 1/' lv_conf.h
-
-    - name: Clone MicroPython
-      run: |
-        git clone https://github.com/micropython/micropython.git
-        cd micropython
-        git submodule update --init
-
-    - name: Compile LVGL .c files to .o files for RP2040
-      run: |
-        cd lvgl/src
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_group.o core/lv_group.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj.o core/lv_obj.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj_class.o core/lv_obj_class.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj_draw.o core/lv_obj_draw.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj_event.o core/lv_obj_event.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj_id_builtin.o core/lv_obj_id_builtin.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj_pos.o core/lv_obj_pos.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj_property.o core/lv_obj_property.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj_scroll.o core/lv_obj_scroll.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj_style.o core/lv_obj_style.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj_style_gen.o core/lv_obj_style_gen.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_obj_tree.o core/lv_obj_tree.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -DLV_CONF_INCLUDE_SIMPLE -c -o core/lv_refr.o core/lv_refr.c
-
-    - name: Create .mpy file from .o files
-      run: |
-        python3 /home/runner/work/micropython/tools/mpy_ld.py lvgl.mpy \
-        core/lv_group.o \
-        core/lv_obj.o \
-        core/lv_obj_class.o \
-        core/lv_obj_draw.o \
-        core/lv_obj_event.o \
-        core/lv_obj_id_builtin.o \
-        core/lv_obj_pos.o \
-        core/lv_obj_property.o \
-        core/lv_obj_scroll.o \
-        core/lv_obj_style.o \
-        core/lv_obj_style_gen.o \
-        core/lv_obj_tree.o \
-        core/lv_refr.o
-
-    - name: Upload compiled .mpy
-      uses: actions/upload-artifact@v3
+        cd lv_micropython
+        git submodule update --init --recursive lib/lv_bindings
+      
+    - name: Initialize Micropython submodules
+      run: make -C ports/rp2 BOARD=${{ matrix.board }} USER_C_MODULES=../../lib/lv_bindings/bindings.cmake submodules
+    - name: Build mpy-cross
+      run: make -j $(nproc) -C mpy-cross
+    - name: Build ${{ matrix.board }}
+      run: make -j $(nproc) -C ports/rp2 BOARD=${{ matrix.board }} USER_C_MODULES=../../lib/lv_bindings/bindings.cmake
+    - uses: actions/upload-artifact@v2
+      if: ${{ env.GITHUB_EVENT_NAME }} == 'push'
       with:
-        name: lvgl.mpy
-        path: lvgl/src/lvgl.mpy
+        name: ${{ matrix.board }}.hex
+        path: ports/rp2/build-${{ matrix.board }}/firmware.elf
