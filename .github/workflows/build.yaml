@@ -13,6 +13,11 @@ jobs:
     steps:
     - name: lv_micro
       run: git clone https://github.com/lvgl/lv_micropython.git
+
+    - name: List repository structure
+      run: |
+        cd lv_micropython
+        ls -R
       
     - name: arm-none-eabi-gcc
       uses: carlosperate/arm-none-eabi-gcc-action@v1.3.0
@@ -25,7 +30,9 @@ jobs:
         git submodule update --init --recursive lib/lv_bindings
       
     - name: Initialize Micropython submodules
-      run: make -C ports/rp2 BOARD=${{ matrix.board }} USER_C_MODULES=../../lib/lv_bindings/bindings.cmake submodules
+      run: |
+        cd
+        make -C ports/rp2 BOARD=${{ matrix.board }} USER_C_MODULES=../../lib/lv_bindings/bindings.cmake submodules
     - name: Build mpy-cross
       run: make -j $(nproc) -C mpy-cross
     - name: Build ${{ matrix.board }}
