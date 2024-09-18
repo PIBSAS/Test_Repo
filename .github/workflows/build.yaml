@@ -1,15 +1,9 @@
-name: T-Display-S3
-
-permissions:
-  contents: write
+name: Compile LVGL to .mpy for RP2040
 
 on:
   push:
-    tags:
-     - 'v*'
-  schedule:
-     - cron: '0 0 * * 0'
-  
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -17,145 +11,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Clonar el repositorio
+    - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Clone repo smartconfig by Walkline80
-      run :  git clone https://gitee.com/walkline/micropython-smartconfig-cmodule.git smartconfig
-
-    - name: Clonar Micropython
-      run: git clone --recurse-submodules https://github.com/micropython/micropython.git
-
-    - name: Clonar s3lcd
-      run: git clone https://github.com/russhughes/s3lcd.git
-    
-    - name: Copy tdt_config and some fonts like frozen modules
-      run: |
-       cp "$GITHUB_WORKSPACE/s3lcd/examples/configs/t-display-s3/tft_config.py" "$GITHUB_WORKSPACE/s3lcd/modules/"
-       cp "$GITHUB_WORKSPACE/s3lcd/examples/configs/t-display-s3/tft_buttons.py" "$GITHUB_WORKSPACE/s3lcd/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/examples/chango/chango_16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/examples/chango/chango_32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/examples/chango/chango_64.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/astrol.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/gotheng.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/greekc.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/italict.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/lowmat.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/marker.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/music.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/romancs.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/bitmap/vga1_8x8.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/bitmap/vga1_8x16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/bitmap/vga1_16x16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/bitmap/vga1_16x32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/bitmap/vga1_bold_16x16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/bitmap/vga1_bold_16x32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/truetype/NotoSerif_32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/examples/chango/chango.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/truetype/NotoSans_32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/truetype/NotoSansMono_32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/bitmap/vga2_8x8.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/bitmap/vga2_8x16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/bitmap/vga2_16x16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/bitmap/vga2_16x32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/bitmap/vga2_bold_16x16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/bitmap/vga2_bold_16x32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/cyrilc.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/gothger.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/gothita.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/greekcs.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/greekp.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/greeks.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/italcc.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/italiccs.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/meteo.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/romanc.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/romand.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/romanp.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/romans.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/romant.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/scriptc.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/scripts.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/symbol.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/s3lcd/fonts/vector/uppmat.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      
-    - name: Instalar dependencias
-      run: |
-       sudo apt-get update
-       sudo apt-get install -y build-essential git wget flex bison gperf pkg-config python3 python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
-
-    - name: Clonar ESP-IDF
-      run: |
-        mkdir -p esp
-        cd esp
-        git clone -b v5.2.2 --recursive https://github.com/espressif/esp-idf.git
-        cd esp-idf/tools
-        python3 idf_tools.py install cmake
-        cd ..
-        ./install.sh esp32s3
-        cd
-
-    - name: Copiar configuracion
-      run: |
-        cp -r ESP32_GENERIC_S3_N16R8 micropython/ports/esp32/boards/
-
-    #- name: Fusionar módulos SmartConfig y st7789
-     # run: |
-      #  mkdir -p $GITHUB_WORKSPACE/temp_cmodule
-       # cat $GITHUB_WORKSPACE/smartconfig/cmodules/micropython.cmake > $GITHUB_WORKSPACE/temp_cmodule/micropython.cmake
-        #cat $GITHUB_WORKSPACE/s3lcd/src/micropython.cmake >> $GITHUB_WORKSPACE/temp_cmodule/micropython.cmake
-        #cat $GITHUB_WORKSPACE/temp_cmodule/micropython.cmake
-
-    - name: Compile with SmartConfig
-      run: |
-        source esp/esp-idf/export.sh
-        cd micropython/
-        make -C mpy-cross
-        export IDF_TARGET=esp32s3
-        cd ports/esp32/
-        idf.py \
-          -D MICROPY_BOARD=ESP32_GENERIC_S3_N16R8 \
-          -D MICROPY_BOARD_DIR="$GITHUB_WORKSPACE/micropython/ports/esp32/boards/ESP32_GENERIC_S3_N16R8" \
-          -D USER_C_MODULES="$GITHUB_WORKSPACE/micropython.cmake" \
-          -D MICROPY_FROZEN_MANIFEST="$GITHUB_WORKSPACE/s3lcd/manifest.py" \
-          -B build-ESP32_GENERIC_S3_N16R8 build
-      
-    - name: Move binaries with SmartConfig
-      run: |
-        mkdir -p ./artifacts
-        cp micropython/ports/esp32/build-ESP32_GENERIC_S3_N16R8/micropython.bin ./artifacts/micropython_smart.bin
-        cp micropython/ports/esp32/build-ESP32_GENERIC_S3_N16R8/bootloader/bootloader.bin ./artifacts/bootloader_smart.bin
-        cp micropython/ports/esp32/build-ESP32_GENERIC_S3_N16R8/partition_table/partition-table.bin ./artifacts/partition-table_smart.bin
-    #- name: Compilar
-     # run: |
-      #  source esp/esp-idf/export.sh
-       # cd micropython/
-        #make -C mpy-cross
-        #export IDF_TARGET=esp32s3
-        #cd ports/esp32/
-        #idf.py -D MICROPY_BOARD=ESP32_GENERIC_S3_N16R8 \
-        #       -D MICROPY_BOARD_DIR="$GITHUB_WORKSPACE/micropython/ports/esp32/boards/ESP32_GENERIC_S3_N16R8" \
-        #       -D USER_C_MODULES="$GITHUB_WORKSPACE/s3lcd/src/micropython.cmake" \
-        #       -D MICROPY_FROZEN_MANIFEST="$GITHUB_WORKSPACE/s3lcd/manifest.py" \
-        #       -B build-ESP32_GENERIC_S3_N16R8 build
-
-    
-    #- name: Mover binarios
-     # run: |
-      #  mkdir -p ./artifacts
-       # cp micropython/ports/esp32/build-ESP32_GENERIC_S3_N16R8/micropython.bin ./artifacts/
-        #cp micropython/ports/esp32/build-ESP32_GENERIC_S3_N16R8/bootloader/bootloader.bin ./artifacts/
-        #cp micropython/ports/esp32/build-ESP32_GENERIC_S3_N16R8/partition_table/partition-table.bin ./artifacts/
-
-    - name: Generate Tag
-      id: tag
-      run: echo "TAG_NAME=release-$(date +'%Y%m%d-%H%M')" >> $GITHUB_ENV
-      
-    - name: Create Release
-      uses: marvinpinto/action-automatic-releases@latest
+    - name: Set up Python
+      uses: actions/setup-python@v4
       with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        prerelease: false
-        automatic_release_tag: ${{ env.TAG_NAME }}  # Usa el nombre del tag generado
-        title: "Release for version ${{ env.TAG_NAME }}"
-        files: ./artifacts/*
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y gcc-arm-none-eabi
+        pip install pyelftools
+
+    - name: Clone LVGL
+      run: |
+        git clone https://github.com/lvgl/lvgl.git
+        cd lvgl
+
+    - name: Clone MicroPython
+      run: |
+        git clone https://github.com/micropython/micropython.git
+        cd micropython
+        git submodule update --init
+
+    - name: Compile LVGL .c files to .o files for RP2040
+      run: |
+        cd lvgl/src
+        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -c -o lv_core.o lv_core.c
+        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -c -o lv_draw.o lv_draw.c
+        # Agrega aquí otros archivos .c que necesites compilar
+
+    - name: Create .mpy file from .o files
+      run: |
+        python3 /home/runner/work/micropython/tools/mpy_ld.py lvgl.mpy lv_core.o lv_draw.o
+        # Asegúrate de incluir todos los .o necesarios
+
+    - name: Upload compiled .mpy
+      uses: actions/upload-artifact@v3
+      with:
+        name: lvgl.mpy
+        path: lvgl/src/lvgl.mpy
