@@ -39,13 +39,13 @@ jobs:
     - name: Compile LVGL .c files to .o files for RP2040
       run: |
         cd lvgl/src
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -c -o lv_core.o lv_core.c
-        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -c -o lv_draw.o lv_draw.c
+        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -c -o core/lv_core.o core/lv_core.c
+        arm-none-eabi-gcc -mcpu=cortex-m0plus -mthumb -c -o draw/lv_draw.o draw/lv_draw.c
         # Agrega aquí otros archivos .c que necesites compilar
 
     - name: Create .mpy file from .o files
       run: |
-        python3 /home/runner/work/micropython/tools/mpy_ld.py lvgl.mpy lv_core.o lv_draw.o
+        python3 /home/runner/work/micropython/tools/mpy_ld.py lvgl.mpy core/lv_core.o draw/lv_draw.o
         # Asegúrate de incluir todos los .o necesarios
 
     - name: Upload compiled .mpy
