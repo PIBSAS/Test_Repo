@@ -6,9 +6,9 @@ on:
     tags:
      - 'v*'
   schedule:
-     - cron: '0 0 * * 0'  # Se ejecutará a las 00:00 UTC cada domingo
+     - cron: '0 0 * * 0'
   
-  workflow_dispatch:  # Permite ejecutar manualmente el flujo de trabajo
+  workflow_dispatch:
 
 jobs:
   build:
@@ -21,9 +21,7 @@ jobs:
       run: git clone https://github.com/lvgl/lv_micropython.git
       
     - name: arm-none-eabi-gcc
-      uses: carlosperate/arm-none-eabi-gcc-action@v1.3.0
-      with:
-        release: '9-2019-q4'
+      uses: carlosperate/arm-none-eabi-gcc-action@v1.9.1
     
     - name: Initialize lv_bindings submodule
       run: |
