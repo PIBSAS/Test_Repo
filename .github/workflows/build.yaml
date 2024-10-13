@@ -87,11 +87,14 @@ jobs:
       id: tag
       run: echo "TAG_NAME=release-$(date +'%Y%m%d-%H%M')" >> $GITHUB_ENV
 
-    - name: Create Release
-      uses: marvinpinto/action-automatic-releases@latest
+    - name: GH Release
+      uses: softprops/action-gh-release@v2.0.8
       with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        tag_name: ${{ env.TAG_NAME }}
+        name: "LV_MicroPython RP2 Release version ${{ env.MPY_VERSION }} (Build ${{ env.TAG_NAME }})"
+        body: "Automated release for MicroPython."
+        draft: false
         prerelease: false
-        automatic_release_tag: ${{ env.TAG_NAME }}
-        title: "LV_MicroPython RP2 Release version ${{ env.MPY_VERSION }} (Build ${{ env.TAG_NAME }})"
         files: lv_micropython/ports/rp2/build-${{ matrix.board }}/firmware.uf2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
