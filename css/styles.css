@@ -1,0 +1,7 @@
+.container {
+    width: 85%; /* Ancho del 85% */
+    margin: 0 auto; /* Centrado horizontal */
+    box-sizing: border-box; /* Ajusta los bordes y padding */
+    background-color: #f0f0f0; /* Color de fondo */
+    padding: 20px; /* Espaciado interno */
+}
