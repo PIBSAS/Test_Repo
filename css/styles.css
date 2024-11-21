@@ -1,8 +1,10 @@
 .container {
-    width: 85%; /* Ancho del 85% */
-    margin: 0 auto; /* Centrado horizontal */
-    box-sizing: border-box; /* Ajusta los bordes y padding */
-    background-color: #f0f0f0; /* Color de fondo */
+    width: 85%; /* El contenedor ocupa el 85% del ancho de la pantalla */
+    margin: 0 auto; /* Centra el contenedor horizontalmente */
+    box-sizing: border-box; /* Incluye padding y border dentro del ancho */
     padding: 20px; /* Espaciado interno */
-    text-align: center; /* Centrar el texto */
+    background-color: #f9f9f9; /* Fondo opcional */
+    font-family: Arial, sans-serif; /* Fuente legible */
+    line-height: 1.6; /* Mejor separación entre líneas */
+    word-wrap: break-word; /* Permite que las palabras largas se ajusten al ancho */
 }
