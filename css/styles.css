@@ -4,5 +4,5 @@
     box-sizing: border-box; /* Ajusta los bordes y padding */
     background-color: #f0f0f0; /* Color de fondo */
     padding: 20px; /* Espaciado interno */
-    text-align: center;
+    text-align: center; /* Centrar el texto */
 }
