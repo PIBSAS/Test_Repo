@@ -1,16 +1,21 @@
-/* Contenedor principal */
+/* Asegura que el contenedor ocupe el 85% del ancho de la pantalla */
 .container {
-    width: 85%; /* El contenedor ocupa el 85% del ancho de la pantalla */
+    width: 85%; /* El contenedor ocupará el 85% del ancho de la pantalla */
     margin: 0 auto; /* Centra el contenedor horizontalmente */
     padding: 20px; /* Espaciado interno */
-    background-color: #f9f9f9; /* Color de fondo */
+    box-sizing: border-box; /* Incluye padding en el cálculo del ancho */
+    background-color: #f9f9f9; /* Fondo claro para ver el contenedor */
     font-family: Arial, sans-serif; /* Fuente legible */
-    line-height: 1.6; /* Mejor separación entre líneas */
+    line-height: 1.6; /* Separación entre líneas */
     word-wrap: break-word; /* Permite que las palabras largas se ajusten al ancho */
-    text-align: justify; /* Alinea el texto de forma justificada dentro del contenedor */
+    text-align: justify; /* Alinea el texto de forma justificada */
+    border: 1px solid #ccc; /* Añade un borde para visualización */
 }
 
-/* Añadimos un borde para que sea más fácil ver el contenedor */
-.container {
-    border: 1px solid #ccc;
+/* Establece un borde a nivel global para ver claramente el tamaño */
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #efefef; /* Fondo gris claro */
+    font-family: Arial, sans-serif;
 }
