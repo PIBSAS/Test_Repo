@@ -1,21 +1,33 @@
-/* Asegura que el contenedor ocupe el 85% del ancho de la pantalla */
+/* Contenedor principal */
 .container {
-    width: 85%; /* El contenedor ocupará el 85% del ancho de la pantalla */
+    width: 85%; /* El contenedor ocupa el 85% del ancho de la pantalla */
     margin: 0 auto; /* Centra el contenedor horizontalmente */
     padding: 20px; /* Espaciado interno */
-    box-sizing: border-box; /* Incluye padding en el cálculo del ancho */
-    background-color: #f9f9f9; /* Fondo claro para ver el contenedor */
+    box-sizing: border-box; /* Asegura que padding y bordes no afecten el cálculo del ancho */
+    background-color: #fff; /* Fondo blanco para el contenedor */
     font-family: Arial, sans-serif; /* Fuente legible */
-    line-height: 1.6; /* Separación entre líneas */
-    word-wrap: break-word; /* Permite que las palabras largas se ajusten al ancho */
-    text-align: justify; /* Alinea el texto de forma justificada */
+    line-height: 1.6; /* Mejora la legibilidad */
+    word-wrap: break-word; /* Ajusta las palabras largas */
+    text-align: justify; /* Alineación justificada del texto */
     border: 1px solid #ccc; /* Añade un borde para visualización */
+    font-size: 18px; /* Tamaño de fuente adecuado */
 }
 
-/* Establece un borde a nivel global para ver claramente el tamaño */
+/* Asegura que el body tenga fondo y no tenga márgenes */
 body {
     margin: 0;
     padding: 0;
-    background-color: #efefef; /* Fondo gris claro */
+    background-color: #efefef; /* Fondo gris claro para toda la página */
     font-family: Arial, sans-serif;
+    height: 100vh; /* Asegura que el cuerpo ocupe toda la altura de la ventana */
+}
+
+/* Si el contenedor necesita ajustarse al 100% de la altura disponible */
+html, body {
+    height: 100%;
+}
+
+/* Asegura que el texto ocupe más espacio si es necesario */
+h1, h2, p {
+    margin-bottom: 20px; /* Espaciado entre los párrafos y encabezados */
 }
