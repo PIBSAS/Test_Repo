@@ -24,7 +24,9 @@ jobs:
         run: |
           mkdir -p micropython/usercmodules
           git clone --depth=1 https://github.com/lvgl/lv_micropython.git micropython/usercmodules/lvgl
+          git submodule update --init --recursive
           ls -la micropython/usercmodules/lvgl  # Verifica que la carpeta existe
+          cd ../../../../  # Volver al directorio raíz
       - name: Debug LVGL directory
         run: |
           echo "📂 Contenido de micropython/usercmodules/lvgl"
