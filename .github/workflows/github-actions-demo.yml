@@ -33,7 +33,7 @@ jobs:
           ls -la micropython/usercmodules/lvgl
           echo "📂 Contenido de user_modules"
           ls -la micropython/usercmodules/lvgl/user_modules
-
+          ls -la micropython/usercmodules/lvgl/user_modules/lv_binding_micropython
       - name: Build MicroPython for RP2040
         run: |
           cd micropython
