@@ -26,6 +26,9 @@ jobs:
           sudo apt-get install -y gcc-arm-none-eabi
           sudo apt-get install -y parallel
           sudo apt-get install -y libreadline-dev libsdl2-2.0-0 libsdl2-dev
+      - name: Install pycparser
+        run: pip install pycparser
+
       - name: Build MicroPython para RP2040
         run: |
           cd micropython
