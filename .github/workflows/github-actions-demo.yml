@@ -6,6 +6,9 @@ on: [push]
 jobs:
   Explore-GitHub-Actions:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        board: [RPI_PICO]
     steps:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
@@ -39,7 +42,69 @@ jobs:
           cd micropython
           make -C mpy-cross
           cd ports/rp2
-          make BOARD=RPI_PICO_W submodules
-          make BOARD=RPI_PICO_W clean
-          make BOARD=RPI_PICO_W USER_C_MODULES=$GITHUB_WORKSPACE/micropython/user_modules/lv_binding_micropython/bindings.cmake
+          make BOARD=RPI_PICO submodules
+          make BOARD=RPI_PICO clean
+          make BOARD=RPI_PICO USER_C_MODULES=$GITHUB_WORKSPACE/micropython/user_modules/lv_binding_micropython/bindings.cmake
       - run: echo "🍏 This job's status is ${{ job.status }}."
+      - run: echo "/home/runner/work/Test_Repo/Test_Repo/micropython/ports/rp2/build-RPI_PICO_W/firmware.elf"
+
+      - name: Clone Pico SDK
+        run: |
+          git clone https://github.com/raspberrypi/pico-sdk.git
+          cd pico-sdk
+          git submodule update --init lib/mbedtls
+          cd ..
+
+      - name: Clone and Build picotool
+        run: |
+          git clone https://github.com/raspberrypi/picotool.git
+          cd picotool
+          mkdir build
+          cd build
+          export PICO_SDK_PATH=${GITHUB_WORKSPACE}/pico-sdk
+          cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/picotool/build ..
+          make -j$(nproc)
+          cd ../..
+  
+      - name: Convert .elf to .uf2
+        run: |
+          run: |
+          ${GITHUB_WORKSPACE}/picotool/build/picotool uf2 convert \
+          ${GITHUB_WORKSPACE}/micropython/ports/rp2/build-${{ matrix.board }}/firmware.elf \
+          ${GITHUB_WORKSPACE}/micropython/ports/rp2/build-${{ matrix.board }}/firmware.uf2
+  
+      - name: Get MicroPython Version from mpconfig.h
+        run: |
+          cd ${GITHUB_WORKSPACE}/micropython/
+          MAJOR=$(grep -oP '(?<=#define MICROPY_VERSION_MAJOR )[0-9]+' py/mpconfig.h)
+          MINOR=$(grep -oP '(?<=#define MICROPY_VERSION_MINOR )[0-9]+' py/mpconfig.h)
+          MICRO=$(grep -oP '(?<=#define MICROPY_VERSION_MICRO )[0-9]+' py/mpconfig.h)
+      
+          MPY_VERSION="$MAJOR.$MINOR.$MICRO"
+      
+          echo "MPY_VERSION=$MPY_VERSION" >> $GITHUB_ENV
+  
+          
+      - name: Generate Tag
+        id: tag
+        run: echo "TAG_NAME=release-$(date +'%Y%m%d-%H%M')" >> $GITHUB_ENV
+  
+      - name: GH Release
+        uses: softprops/action-gh-release@v2.0.8
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          name: "MicroPython with LVGL for RP2 Release version ${{ env.MPY_VERSION }} (Build ${{ env.TAG_NAME }})"
+          body: |
+            Automated release for MicroPython.
+            ## How to Flash the Firmware
+            ### Windows, Linux:
+            1. Download the .uf2 file from the release.
+            2. Press and hold the BOOT button on the RP2040 and press RESET button or connect it to your computer via USB.
+            3. Release the button. The RP2040  will appear as a removable drive.
+            4. Drag and drop the .uf2 file onto the drive.
+            5. The RP2040 will reboot and run MicroPython.
+          draft: false
+          prerelease: false
+          files: ports/rp2/build-${{ matrix.board }}/firmware.uf2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
