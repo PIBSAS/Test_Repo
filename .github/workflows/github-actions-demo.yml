@@ -33,7 +33,7 @@ jobs:
           cd ports/rp2
           make submodules
           make clean
-          make USER_C_MODULES=../../usercmodules/lvgl/user_modules CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE"
+          make USER_C_MODULES=../../lv_micropython/user_modules CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE"
       - name: Build MicroPython para Pico W
         run: |
           cd micropython
@@ -41,5 +41,5 @@ jobs:
           cd ports/rp2
           make BOARD=RPI_PICO_W submodules
           make BOARD=RPI_PICO_W clean
-          make BOARD=RPI_PICO_W USER_C_MODULES=../../../usercmodules/lvgl/user_modules CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE"
+          make BOARD=RPI_PICO_W USER_C_MODULES=../../lv_micropython/user_modules CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE"
       - run: echo "🍏 This job's status is ${{ job.status }}."
