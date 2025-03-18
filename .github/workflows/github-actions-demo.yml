@@ -1,5 +1,7 @@
 name: GitHub Actions Demo
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+permissions:
+  contents: write
 on: [push]
 jobs:
   Explore-GitHub-Actions:
@@ -8,11 +10,27 @@ jobs:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      - name: Check out repository code
-        uses: actions/checkout@v4
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
+      - name: Checkout MicroPython
+        run: git clone --recurse-submodules https://github.com/micropython/micropython.git
+      - name: Install dependencies
         run: |
-          ls ${{ github.workspace }}
+          sudo apt-get update
+          sudo apt-get install -y build-essential libffi-dev git pkg-config \
+              libssl-dev python3 python3-pip python3-venv
+          sudo apt-get install -y gcc-arm-none-eabi
+      - name: Build MicroPython for RP2040
+        run: |
+          cd micropython
+          make -C mpy-cross
+          cd ports/rp2
+          make submodules
+          make
+      - name: Build MicroPython for Pico W
+        run: |
+          cd micropython
+          make -C mpy-cross
+          cd ports/rp2
+          make BOARD=RPI_PICO_W submodules  # Clonar submódulos específicos para Pico W
+          make BOARD=RPI_PICO_W clean  # Limpiar compilaciones anteriores
+          make BOARD=RPI_PICO_W  # Compilar para Pico W
       - run: echo "🍏 This job's status is ${{ job.status }}."
