@@ -45,6 +45,7 @@ jobs:
           make BOARD=RPI_PICO submodules
           make BOARD=RPI_PICO clean
           make BOARD=RPI_PICO USER_C_MODULES=$GITHUB_WORKSPACE/micropython/user_modules/lv_binding_micropython/bindings.cmake
+          ls -lh ${GITHUB_WORKSPACE}/micropython/ports/rp2/build-${{ matrix.board }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
 
       - name: Clone Pico SDK
@@ -107,6 +108,6 @@ jobs:
             5. The RP2040 will reboot and run MicroPython.
           draft: false
           prerelease: false
-          files: ${GITHUB_WORKSPACE}/micropython/ports/rp2/build-${{ matrix.board }}/firmware.uf2
+          files: micropython/ports/rp2/build-${{ matrix.board }}/firmware.uf2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
