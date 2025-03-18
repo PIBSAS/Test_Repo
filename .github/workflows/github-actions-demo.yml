@@ -31,14 +31,11 @@ jobs:
           git submodule update --init --recursive user_modules/lv_binding_micropython
           echo "$GITHUB_WORKSPACE"
 
-      - name: Copiar archivo .cmake de st7789_mpy
-        run: |
-          cp $GITHUB_WORKSPACE/st7789_mpy/st7789/micropython.cmake $GITHUB_WORKSPACE/micropython/user_modules/
-
       - name: Create custom cmake file
         run: |
           echo "include(${GITHUB_WORKSPACE}/micropython/user_modules/lv_binding_micropython/bindings.cmake)" > $GITHUB_WORKSPACE/micropython/user_modules/custom_modules.cmake
-          echo "include($GITHUB_WORKSPACE/micropython/user_modules/micropython.cmake)" >> $GITHUB_WORKSPACE/micropython/user_modules/custom_modules.cmake
+          echo "include($GITHUB_WORKSPACE/st7789_mpy/st7789/micropython.cmake)" >> $GITHUB_WORKSPACE/micropython/user_modules/custom_modules.cmake
+          cat $GITHUB_WORKSPACE/micropython/user_modules/custom_modules.cmake
         
       - name: Build MicroPython para RP2040
         run: |
