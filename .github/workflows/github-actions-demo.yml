@@ -21,13 +21,20 @@ jobs:
       - name: Install pycparser
         run: pip install pycparser
 
+      - name: Clone st7789_mpy
+        run: git clone https://github.com/russhughes/st7789_mpy.git
+      
       - name: Clonar lv_micropython (Fork de MicroPython con LVGL)
         run: |
           git clone --recurse-submodules https://github.com/lvgl/lv_micropython.git micropython
           cd micropython
           git submodule update --init --recursive user_modules/lv_binding_micropython
           echo "$GITHUB_WORKSPACE"
-      
+
+      - name: Copiar archivo .cmake de st7789_mpy
+        run: |
+          cp $GITHUB_WORKSPACE/st7789_mpy/st7789/micropython.cmake $GITHUB_WORKSPACE/micropython/user_modules/
+          
       - name: Build MicroPython para RP2040
         run: |
           cd micropython
@@ -35,7 +42,7 @@ jobs:
           cd ports/rp2
           make submodules
           make clean
-          make USER_C_MODULES=$GITHUB_WORKSPACE/micropython/user_modules/lv_binding_micropython/bindings.cmake
+          make USER_C_MODULES=$GITHUB_WORKSPACE/micropython/user_modules/lv_binding_micropython/bindings.cmake USER_C_MODULES_ST7789=$GITHUB_WORKSPACE/st7789_mpy/st7789/micropython.cmake
       
       - name: Build MicroPython para Pico W
         run: |
@@ -44,7 +51,7 @@ jobs:
           cd ports/rp2
           make BOARD=RPI_PICO submodules
           make BOARD=RPI_PICO clean
-          make BOARD=RPI_PICO USER_C_MODULES=$GITHUB_WORKSPACE/micropython/user_modules/lv_binding_micropython/bindings.cmake
+          make BOARD=RPI_PICO USER_C_MODULES=$GITHUB_WORKSPACE/micropython/user_modules/lv_binding_micropython/bindings.cmake USER_C_MODULES_ST7789=$GITHUB_WORKSPACE/st7789_mpy/st7789/micropython.cmake
           ls -lh ${GITHUB_WORKSPACE}/micropython/ports/rp2/build-${{ matrix.board }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
 
