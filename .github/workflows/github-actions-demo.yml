@@ -32,7 +32,7 @@ jobs:
           cd ports/rp2
           make submodules
           make clean
-          make USER_C_MODULES=$GITHUB_WORKSPACE/micropython/user_modules/lv_binding_micropython/bindings.cmake CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE"
+          make USER_C_MODULES=$GITHUB_WORKSPACE/micropython/user_modules/lv_binding_micropython/bindings.cmake
       
       - name: Build MicroPython para Pico W
         run: |
@@ -41,5 +41,5 @@ jobs:
           cd ports/rp2
           make BOARD=RPI_PICO_W submodules
           make BOARD=RPI_PICO_W clean
-          make BOARD=RPI_PICO_W USER_C_MODULES=$GITHUB_WORKSPACE/micropython/user_modules/lv_binding_micropython/bindings.cmake CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE"
+          make BOARD=RPI_PICO_W USER_C_MODULES=$GITHUB_WORKSPACE/micropython/user_modules/lv_binding_micropython/bindings.cmake
       - run: echo "🍏 This job's status is ${{ job.status }}."
