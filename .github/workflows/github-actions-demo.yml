@@ -12,9 +12,13 @@ jobs:
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - name: Checkout del repositorio
         uses: actions/checkout@v4
-      - name: Checkout MicroPython
-        run: git clone --recurse-submodules https://github.com/micropython/micropython.git
-      - name: Install dependencies
+      - name: Clonar lv_micropython (Fork de MicroPython con LVGL)
+        run: |
+          git clone --recurse-submodules https://github.com/lvgl/lv_micropython.git micropython
+          cd micropython
+          git submodule update --init --recursive
+          ls -la
+      - name: Instalar dependencias
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libffi-dev git pkg-config \
@@ -22,16 +26,6 @@ jobs:
           sudo apt-get install -y gcc-arm-none-eabi
           sudo apt-get install -y parallel
           sudo apt-get install -y libreadline-dev libsdl2-2.0-0 libsdl2-dev
-      - name: Clonar LVGL MicroPython Fork
-        run: |
-          mkdir -p micropython/usercmodules
-          cd micropython/usercmodules
-          git clone --depth=1 https://github.com/lvgl/lv_micropython.git lvgl
-          cd micropython/usercmodules/lvgl/user_modules
-          git submodule update --init --recursive
-          ls -la
-      - name: Verificar LVGL
-        run: ls -la micropython/usercmodules/lvgl
       - name: Build MicroPython para RP2040
         run: |
           cd micropython
@@ -39,12 +33,7 @@ jobs:
           cd ports/rp2
           make submodules
           make clean
-          # Define USER_C_MODULES antes de hacer el build
-          export USER_C_MODULES=$PWD/../../usercmodules/lvgl/user_modules
-          echo "USER_C_MODULES is set to: $USER_C_MODULES"
-          ls -la $USER_C_MODULES
-          make USER_C_MODULES=$USER_C_MODULES CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE"
-
+          make USER_C_MODULES=../../usercmodules/lvgl/user_modules CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE"
       - name: Build MicroPython para Pico W
         run: |
           cd micropython
@@ -52,8 +41,5 @@ jobs:
           cd ports/rp2
           make BOARD=RPI_PICO_W submodules
           make BOARD=RPI_PICO_W clean
-          # Define USER_C_MODULES antes de hacer el build
-          export USER_C_MODULES=$PWD/../../../usercmodules/lvgl/user_modules
-          make BOARD=RPI_PICO_W USER_C_MODULES=$USER_C_MODULES CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE"
-
+          make BOARD=RPI_PICO_W USER_C_MODULES=../../../usercmodules/lvgl/user_modules CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE"
       - run: echo "🍏 This job's status is ${{ job.status }}."
