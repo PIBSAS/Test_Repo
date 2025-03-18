@@ -16,7 +16,7 @@ jobs:
         run: |
           git clone --recurse-submodules https://github.com/lvgl/lv_micropython.git micropython
           cd micropython
-          git submodule update --init --recursive
+          git submodule update --init --recursive user_modules/lv_binding_micropython
           ls -R
       - name: Instalar dependencias
         run: |
@@ -33,7 +33,7 @@ jobs:
           cd ports/rp2
           make submodules
           make clean
-          make USER_C_MODULES=$GITHUB_WORKSPACE/micropython/user_modules CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE"
+          make USER_C_MODULES=$GITHUB_WORKSPACE/micropython/user_modules/lv_binding_micropython/bindings.cmake CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE"
       - name: Build MicroPython para Pico W
         run: |
           cd micropython
@@ -41,5 +41,5 @@ jobs:
           cd ports/rp2
           make BOARD=RPI_PICO_W submodules
           make BOARD=RPI_PICO_W clean
-          make BOARD=RPI_PICO_W USER_C_MODULES=$GITHUB_WORKSPACE/micropython/user_modules CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE"
+          make BOARD=RPI_PICO_W USER_C_MODULES=$GITHUB_WORKSPACE/micropython/user_modules/lv_binding_micropython/bindings.cmake CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE"
       - run: echo "🍏 This job's status is ${{ job.status }}."
