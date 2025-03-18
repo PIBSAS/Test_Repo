@@ -70,7 +70,11 @@ jobs:
           ${GITHUB_WORKSPACE}/picotool/build/picotool uf2 convert \
           ${GITHUB_WORKSPACE}/micropython/ports/rp2/build-${{ matrix.board }}/firmware.elf \
           ${GITHUB_WORKSPACE}/micropython/ports/rp2/build-${{ matrix.board }}/firmware.uf2
-  
+
+      - name: List build directory contents (Check for firmware.uf2)
+        run: |
+          ls -lh ${GITHUB_WORKSPACE}/micropython/ports/rp2/build-${{ matrix.board }}
+
       - name: Get MicroPython Version from mpconfig.h
         run: |
           cd ${GITHUB_WORKSPACE}/micropython/
@@ -103,6 +107,6 @@ jobs:
             5. The RP2040 will reboot and run MicroPython.
           draft: false
           prerelease: false
-          files: ports/rp2/build-${{ matrix.board }}/firmware.uf2
+          files: ${GITHUB_WORKSPACE}/micropython/ports/rp2/build-${{ matrix.board }}/firmware.uf2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
