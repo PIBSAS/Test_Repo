@@ -27,7 +27,7 @@ jobs:
           mkdir -p micropython/usercmodules
           cd micropython/usercmodules
           git clone --depth=1 https://github.com/lvgl/lv_micropython.git lvgl
-          cd lvgl
+          cd micropython/usercmodules/lvgl/user_modules
           git submodule update --init --recursive
           ls -la
       - name: Verificar LVGL
@@ -39,7 +39,11 @@ jobs:
           cd ports/rp2
           make submodules
           make clean
-          make USER_C_MODULES=../../usercmodules/lvgl/user_modules CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE"
+          # Define USER_C_MODULES antes de hacer el build
+          export USER_C_MODULES=$PWD/../../usercmodules/lvgl/user_modules
+          echo "USER_C_MODULES is set to: $USER_C_MODULES"
+          ls -la $USER_C_MODULES
+          make USER_C_MODULES=$USER_C_MODULES CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE"
 
       - name: Build MicroPython para Pico W
         run: |
@@ -48,6 +52,8 @@ jobs:
           cd ports/rp2
           make BOARD=RPI_PICO_W submodules
           make BOARD=RPI_PICO_W clean
-          make BOARD=RPI_PICO_W USER_C_MODULES=../../../usercmodules/lvgl/user_modules CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE"
+          # Define USER_C_MODULES antes de hacer el build
+          export USER_C_MODULES=$PWD/../../../usercmodules/lvgl/user_modules
+          make BOARD=RPI_PICO_W USER_C_MODULES=$USER_C_MODULES CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE"
 
       - run: echo "🍏 This job's status is ${{ job.status }}."
