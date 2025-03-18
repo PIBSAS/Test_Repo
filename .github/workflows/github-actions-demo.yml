@@ -46,7 +46,6 @@ jobs:
           make BOARD=RPI_PICO clean
           make BOARD=RPI_PICO USER_C_MODULES=$GITHUB_WORKSPACE/micropython/user_modules/lv_binding_micropython/bindings.cmake
       - run: echo "🍏 This job's status is ${{ job.status }}."
-      - run: echo "/home/runner/work/Test_Repo/Test_Repo/micropython/ports/rp2/build-RPI_PICO_W/firmware.elf"
 
       - name: Clone Pico SDK
         run: |
@@ -68,7 +67,6 @@ jobs:
   
       - name: Convert .elf to .uf2
         run: |
-          run: |
           ${GITHUB_WORKSPACE}/picotool/build/picotool uf2 convert \
           ${GITHUB_WORKSPACE}/micropython/ports/rp2/build-${{ matrix.board }}/firmware.elf \
           ${GITHUB_WORKSPACE}/micropython/ports/rp2/build-${{ matrix.board }}/firmware.uf2
