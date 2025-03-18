@@ -20,11 +20,18 @@ jobs:
           sudo apt-get install -y gcc-arm-none-eabi
           sudo apt-get install -y parallel
           sudo apt-get install -y libreadline-dev libsdl2-2.0-0 libsdl2-dev
-      - name: Clone LVGL User C Module
+      - name: Clone LVGL MicroPython Fork
         run: |
           mkdir -p micropython/usercmodules
-          git clone --depth=1 https://github.com/lvgl/lv_binding_micropython.git micropython/usercmodules/lvgl
-      
+          git clone --depth=1 https://github.com/lvgl/lv_micropython.git micropython/usercmodules/lvgl
+          ls -la micropython/usercmodules/lvgl  # Verifica que la carpeta existe
+      - name: Debug LVGL directory
+        run: |
+          echo "📂 Contenido de micropython/usercmodules/lvgl"
+          ls -la micropython/usercmodules/lvgl
+          echo "📂 Contenido de user_modules"
+          ls -la micropython/usercmodules/lvgl/user_modules
+
       - name: Build MicroPython for RP2040
         run: |
           cd micropython
@@ -32,7 +39,7 @@ jobs:
           cd ports/rp2
           make submodules
           make clean
-          make USER_C_MODULES=../../../usercmodules/lvgl CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE"
+          make USER_C_MODULES=../../usercmodules/lvgl/user_modules CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE"
       
       - name: Build MicroPython for Pico W
         run: |
@@ -41,5 +48,5 @@ jobs:
           cd ports/rp2
           make BOARD=RPI_PICO_W submodules  # Clonar submódulos específicos para Pico W
           make BOARD=RPI_PICO_W clean  # Limpiar compilaciones anteriores
-          make BOARD=RPI_PICO_W USER_C_MODULES=../../../usercmodules/lvgl CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE" # Compilar para Pico W
+          make BOARD=RPI_PICO_W USER_C_MODULES=../../../usercmodules/lvgl/user_modules CFLAGS="-DLV_LVGL_H_INCLUDE_SIMPLE"
       - run: echo "🍏 This job's status is ${{ job.status }}."
