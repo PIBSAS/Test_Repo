@@ -82,7 +82,7 @@ jobs:
       # make submodules
       #  make
     - name: List files after build
-      run: ls -l ${GITHUB_WORKSPACE}/micropython/ports/esp32/build-ESP32-C3/
+      run: ls -l $GITHUB_WORKSPACE/micropython/ports/esp32/boards/ESP32_GENERIC_C3
     
     - name: Build MicroPython for RP2040
       run: |
