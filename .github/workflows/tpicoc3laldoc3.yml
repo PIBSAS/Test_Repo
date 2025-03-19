@@ -74,10 +74,10 @@ jobs:
         make -C mpy-cross
         export IDF_TARGET=esp32c3
         cd ports/esp32
-        idf.py -D MICROPY_BOARD=ESP32_GENERIC_C3  # Cambia el nombre del board según sea necesario
-               -D MICROPY_BOARD_DIR="$GITHUB_WORKSPACE/micropython/ports/esp32/boards/ESP32_GENERIC_C3"  # Ajusta la ruta
-               -D USER_C_MODULES="$GITHUB_WORKSPACE/st7789_mpy/st7789/micropython.cmake"  # Asegúrate de que la ruta sea correcta
-               -B build-ESP32_GENERIC_C3 # Usa el nombre apropiado para el ESP32-C3
+        idf.py -D MICROPY_BOARD=ESP32_GENERIC_C3 \
+               -D MICROPY_BOARD_DIR="$GITHUB_WORKSPACE/micropython/ports/esp32/boards/ESP32_GENERIC_C3" \
+               -D USER_C_MODULES="$GITHUB_WORKSPACE/st7789_mpy/st7789/micropython.cmake" \
+               -B build-ESP32_GENERIC_C3
       # make USER_C_MODULES=$GITHUB_WORKSPACE/st7789_mpy/st7789/micropython.cmake
       # make submodules
       #  make
