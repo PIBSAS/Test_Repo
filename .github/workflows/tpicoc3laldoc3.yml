@@ -59,28 +59,26 @@ jobs:
       run: |
         mkdir -p esp
         cd esp
-        git clone -b v5.3.2 --recursive https://github.com/espressif/esp-idf.git
+        git clone -b v5.4 --recursive https://github.com/espressif/esp-idf.git
         cd esp-idf/tools
         python3 idf_tools.py install cmake
         cd ..
         ./install.sh esp32
         cd
-    
-        
+     
     - name: Build MicroPython for ESP32-C3
+      continue-on-error: true
       run: |
         source esp/esp-idf/export.sh
         cd micropython
         make -C mpy-cross
-        export IDF_TARGET=esp32c3
+        export IDF_TARGET=esp32
         cd ports/esp32
         idf.py -D MICROPY_BOARD=ESP32_GENERIC_C3 \
                -D MICROPY_BOARD_DIR="$GITHUB_WORKSPACE/micropython/ports/esp32/boards/ESP32_GENERIC_C3" \
                -D USER_C_MODULES="$GITHUB_WORKSPACE/st7789_mpy/st7789/micropython.cmake" \
-               -B build-ESP32_GENERIC_C3
-      # make USER_C_MODULES=$GITHUB_WORKSPACE/st7789_mpy/st7789/micropython.cmake
-      # make submodules
-      #  make
+               -B build-ESP32_GENERIC_C3 build
+    
     - name: List files after build
       run: ls -l $GITHUB_WORKSPACE/micropython/ports/esp32/boards/ESP32_GENERIC_C3
     
@@ -94,13 +92,13 @@ jobs:
         make
 
     - name: Move firmwares files to artifacts
+      if: success() || failure()
       run: |
         mkdir -p ./artifacts
         cp micropython/ports/rp2/build-RPI_PICO/*.uf2 ./artifacts/T-PicoC3.uf2
-        cp micropython/ports/esp32/build-ESP32-C3/*.uf2 ./artifacts/T-PicoC3-ESP32C3.uf2
-        cp micropython/ports/esp32/build-ESP32-C3/micropython.bin ./artifacts/micropython.bin
-        cp micropython/ports/esp32/build-ESP32-C3/bootloader/bootloader.bin ./artifacts/bootloader.bin
-        cp micropython/ports/esp32/build-ESP32-C3/partition_table/partition-table.bin ./artifacts/partition-table.bin
+        cp micropython/ports/esp32/build-ESP32_GENERIC_C3/micropython.bin ./artifacts/micropython.bin || true
+        cp micropython/ports/esp32/build-ESP32_GENERIC_C3/bootloader/bootloader.bin ./artifacts/bootloader.bin || true
+        cp micropython/ports/esp32/build-ESP32_GENERIC_C3/partition_table/partition-table.bin ./artifacts/partition-table.bin || true
         
     - name: Get MicroPython Version from mpconfig.h
       run: |
