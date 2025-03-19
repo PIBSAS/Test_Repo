@@ -33,8 +33,8 @@ jobs:
 
       - name: Create custom cmake file
         run: |
-          echo "include(${GITHUB_WORKSPACE}/micropython/user_modules/lv_binding_micropython/bindings.cmake)" > $GITHUB_WORKSPACE/micropython/user_modules/custom_modules.cmake
-          echo "include($GITHUB_WORKSPACE/st7789_mpy/st7789/micropython.cmake)" >> $GITHUB_WORKSPACE/micropython/user_modules/custom_modules.cmake
+          echo "include(${CMAKE_CURRENT_LIST_DIR}/micropython/user_modules/lv_binding_micropython/bindings.cmake)" > $GITHUB_WORKSPACE/micropython/user_modules/custom_modules.cmake
+          echo "include(${CMAKE_CURRENT_LIST_DIR}/st7789_mpy/st7789/micropython.cmake)" >> $GITHUB_WORKSPACE/micropython/user_modules/custom_modules.cmake
           cat $GITHUB_WORKSPACE/micropython/user_modules/custom_modules.cmake
         
       - name: Build MicroPython para RP2040
