@@ -28,12 +28,12 @@ jobs:
           -v $PWD:/workspace -w /workspace \
           --platform linux/arm64 ubuntu:22.04 bash -c "
           apt update && apt install -y software-properties-common && \
-          sudo add-apt-repository universe && sudo add-apt-repository multiverse && sudo apt update && \
-          apt update && apt install -y build-essential cmake clang ninja-build llvm \
+          add-apt-repository universe && add-apt-repository multiverse && apt update && \
+          apt install -y build-essential cmake clang ninja-build llvm \
           libcairo2-dev libxkbcommon-x11-dev libxkbcommon-dev libxcb-cursor-dev \
           libxcb-keysyms1-dev libxcb-util-dev libxrandr-dev libxinerama-dev \
           libxcursor-dev libasound2-dev libjack-jackd2-dev libgtk-3-dev \
-          libwebkit2gtk-4.1 libwebkit2gtk-4.1-dev libcurl4-openssl-dev \
+          libwebkit2gtk-4.0 libwebkit2gtk-4.0-dev libcurl4-openssl-dev \
           alsa alsa-tools libasound2-dev libjack-dev libfreetype6-dev \
           libxinerama-dev libxcb-xinerama0 libxinerama1 libxrandr-dev \
           libgl1-mesa-dev libxcursor-dev libxcb-cursor-dev qjackctl meterbridge jack-tools && \
