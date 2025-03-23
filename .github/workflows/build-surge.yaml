@@ -24,7 +24,8 @@ jobs:
 
       - name: 🔹 Configurar contenedor para aarch64
         run: |
-          docker run --rm -it -v $PWD:/workspace -w /workspace \
+          docker run --rm \
+          -v $PWD:/workspace -w /workspace \
           --platform linux/arm64 ubuntu:22.04 bash -c "
           apt update && apt install -y build-essential cmake clang ninja-build llvm \
           libcairo2-dev libxkbcommon-x11-dev libxkbcommon-dev libxcb-cursor-dev \
