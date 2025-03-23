@@ -1,0 +1,49 @@
+name: Build Surge XT for Orange Pi (aarch64)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:  # Permite ejecución manual desde GitHub Actions
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: 🔹 Configurar QEMU para compilar en aarch64
+        run: |
+          sudo apt update
+          sudo apt install -y qemu-user-static binfmt-support
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+      - name: 🔹 Clonar el código fuente
+        uses: actions/checkout@v4
+
+      - name: 🔹 Configurar contenedor para aarch64
+        run: |
+          docker run --rm -it -v $PWD:/workspace -w /workspace \
+          --platform linux/arm64 ubuntu:22.04 bash -c "
+          apt update && apt install -y build-essential cmake clang ninja-build llvm \
+          libcairo2-dev libxkbcommon-x11-dev libxkbcommon-dev libxcb-cursor-dev \
+          libxcb-keysyms1-dev libxcb-util-dev libxrandr-dev libxinerama-dev \
+          libxcursor-dev libasound2-dev libjack-jackd2-dev libgtk-3-dev \
+          libwebkit2gtk-4.1 libwebkit2gtk-4.1-dev libcurl4-openssl-dev \
+          alsa alsa-tools libasound2-dev libjack-dev libfreetype6-dev \
+          libxinerama-dev libxcb-xinerama0 libxinerama1 libxrandr-dev \
+          libgl1-mesa-dev libxcursor-dev libxcb-cursor-dev qjackctl meterbridge jack-tools && \
+          git clone --depth=1 https://github.com/surge-synthesizer/surge.git && \
+          cd surge && \
+          git submodule update --init --recursive && \
+          cmake -Bignore/s13clang -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ && \
+          cmake --build ignore/s13clang --target all --parallel $(nproc) && \
+          tar -czvf surge_xt_aarch64.tar.gz -C ignore/s13clang .
+          "
+
+      - name: 🔹 Guardar binarios compilados como artefactos
+        uses: actions/upload-artifact@v4
+        with:
+          name: SurgeXT-aarch64
+          path: surge_xt_aarch64.tar.gz
