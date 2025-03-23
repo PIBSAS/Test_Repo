@@ -26,7 +26,9 @@ jobs:
         run: |
           docker run --rm \
           -v $PWD:/workspace -w /workspace \
-          --platform linux/arm64 ubuntu:22.04-desktop bash -c "
+          --platform linux/arm64 ubuntu:22.04 bash -c "
+          apt update && apt install -y software-properties-common && \
+          sudo add-apt-repository universe && sudo add-apt-repository multiverse && sudo apt update && \
           apt update && apt install -y build-essential cmake clang ninja-build llvm \
           libcairo2-dev libxkbcommon-x11-dev libxkbcommon-dev libxcb-cursor-dev \
           libxcb-keysyms1-dev libxcb-util-dev libxrandr-dev libxinerama-dev \
