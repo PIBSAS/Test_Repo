@@ -29,7 +29,7 @@ jobs:
           --platform linux/arm64 ubuntu:22.04 bash -c "
           export DEBIAN_FRONTEND=noninteractive && \
           apt update && \
-          apt install -y software-properties-common apt-tools && \
+          apt install -y software-properties-common && \
           add-apt-repository universe && \
           add-apt-repository multiverse && \
           apt update && apt upgrade -y && \
