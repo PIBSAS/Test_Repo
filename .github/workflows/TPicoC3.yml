@@ -1,4 +1,4 @@
-name: T-PicoC3 Display
+name: T-PicoC3 Display Lado ESP32 C3 MicroPython y Lado RP2040
 
 permissions:
   contents: write
@@ -59,7 +59,7 @@ jobs:
       run: |
         mkdir -p esp
         cd esp
-        git clone -b v5.4 --recursive https://github.com/espressif/esp-idf.git
+        git clone -b v5.4.2 --recursive https://github.com/espressif/esp-idf.git
         cd esp-idf/tools
         python3 idf_tools.py install cmake
         cd ..
@@ -67,7 +67,6 @@ jobs:
         cd
      
     - name: Build MicroPython for ESP32-C3
-      continue-on-error: true
       run: |
         source esp/esp-idf/export.sh
         cd micropython
@@ -92,7 +91,6 @@ jobs:
         make
 
     - name: Move firmwares files to artifacts
-      if: success() || failure()
       run: |
         mkdir -p ./artifacts
         cp micropython/ports/rp2/build-RPI_PICO/*.uf2 ./artifacts/T-PicoC3.uf2
@@ -119,7 +117,30 @@ jobs:
     - name: Generate Tag
       id: tag
       run: echo "TAG_NAME=release-$(date +'%Y%m%d-%H%M')" >> $GITHUB_ENV
-      
+
+    - name: Validar tamaños de binarios por nombre
+      run: |
+        check_size() {
+          FILE=$1
+          MAX_BYTES=$2
+          if [ -f "$FILE" ]; then
+            SIZE=$(stat -c%s "$FILE")
+            if [ "$SIZE" -gt "$MAX_BYTES" ]; then
+              echo "::error::El archivo $FILE es demasiado grande ($(du -h "$FILE" | cut -f1))"
+              exit 1
+            else
+              echo "$FILE ok ($(du -h "$FILE" | cut -f1))"
+            fi
+          else
+            echo "::warning::El archivo $FILE no existe, se omite"
+          fi
+        }
+    
+        check_size ./artifacts/micropython.bin $((2 * 1024 * 1024))       # 2MB
+        check_size ./artifacts/bootloader.bin $((128 * 1024))            # 128KB
+        check_size ./artifacts/partition-table.bin $((16 * 1024))        # 16KB
+        check_size ./artifacts/T-PicoC3.uf2 $((2 * 1024 * 1024))         # 2MB
+        
     - name: GH Release
       uses: softprops/action-gh-release@v2.0.8
       with:
