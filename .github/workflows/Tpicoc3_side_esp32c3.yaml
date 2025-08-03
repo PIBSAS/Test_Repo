@@ -88,7 +88,7 @@ jobs:
       uses: softprops/action-gh-release@v2.0.8
       with:
         tag_name: ${{ env.TAG_NAME }}
-        name: "MicroPython for LilyGo T-Display S3 with S3LCD Driver release version ${{ env.MPY_VERSION }} (Build ${{ env.TAG_NAME }})"
+        name: "MicroPython for LilyGo TPico C3 Displayr release version ${{ env.MPY_VERSION }} (Build ${{ env.TAG_NAME }})"
         body: |
           Automated release for MicroPython.
           
@@ -136,7 +136,7 @@ jobs:
           ### Then Flash:
           - Put 3 binaries in the same folder you are executing the steps, example Downloads folder, you need to be in that folder where are the binaries.
           ````bash
-          python -m esptool --chip esp32c3 -b 460800 --before default_reset --after no_reset write_flash --flash_mode dio --flash_size 2MB --flash_freq 80m 0x0 bootloader.bin 0x8000 partition-table.bin 0x10000 micropython.bin
+          python -m esptool --chip esp32 -b 460800 --before default_reset --after hard_reset write_flash --flash_mode dio --flash_size 4MB --flash_freq 40m 0x1000 bootloader.bin 0x8000 partition-table.bin 0x10000 micropython.bin
           ````
           
           ## Linux:
@@ -165,7 +165,7 @@ jobs:
           ### Then Flash:
           - Put 3 binaries in the same folder you are executing the steps, example Downloads folder, you need to be in that folder where are the binaries.
           ````bash
-          python -m esptool --chip esp32c3 -b 460800 --before default_reset --after no_reset write_flash --flash_mode dio --flash_size 2MB --flash_freq 80m 0x0 bootloader.bin 0x8000 partition-table.bin 0x10000 micropython.bin
+          python -m esptool --chip esp32 -b 460800 --before default_reset --after hard_reset write_flash --flash_mode dio --flash_size 4MB --flash_freq 40m 0x1000 bootloader/bootloader.bin 0x8000 partition_table/partition-table.bin 0x10000 micropython.bin
           ````
                     
           ### NOTE IN WINDOWS:
