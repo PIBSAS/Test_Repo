@@ -145,21 +145,99 @@ jobs:
       uses: softprops/action-gh-release@v2.0.8
       with:
         tag_name: ${{ env.TAG_NAME }}
-        name: "MicroPython + ST7789 Display Driver for LilyGo T-PicoC3 Display Release version ${{ env.MPY_VERSION }} (Build ${{ env.TAG_NAME }})"
+        name: "MicroPython + ST7789 Display Driver for LilyGo T-PicoC3 Display for both sides Release version ${{ env.MPY_VERSION }} (Build ${{ env.TAG_NAME }})"
         body: |
           Automated release for MicroPython.
-          ## How to Flash the Firmware
-          ### Windows, Linux:
-          1. Download the .uf2 file from the release.
-          2. Press and hold the BOOT button on the RP2040 and press RESET button or connect it to your computer via USB.
-          3. Release the button. The RP2040  will appear as a removable drive.
-          4. Drag and drop the .uf2 file onto the drive..
-          5. The RP2040 will reboot and run MicroPython..
-
-          ## Examples Usage
-          Please use the examples located in the [examples folder of the st7789_mpy repository](https://github.com/russhughes/st7789_mpy/tree/master/examples).
           
-          New Examples in this repo using TPicoESPC3 module and remake to micropython vendor's codes.
+          ## What we get here: 
+          - MicroPython for TPico C3 ESP32 Side:
+            - ```micropython.bin, bootloader.bin and partition-table.bin.```
+
+          # Instructions
+            You need to have some dependencies pre-instaled in your OS:
+            - Python 3
+            - Pip
+            - Python VENV
+          ## Windows:
+          ````bash
+          python -m venv esp-env
+          ````
+          
+          ````bash
+          .\esp-env\Scripts\activate
+          ````
+          
+          or
+          
+          ````bash
+          py -m venv esp-env
+          ````
+          
+          ````bash
+          .\esp-env\Scripts\activate
+          ````
+          
+          ### Then install esptool:
+          ````bash
+          pip install esptool
+          ````
+          
+          ### Put TPicoC3 in BOOTLOADER MODE(This is not really necesary):
+          - With USB cable on USB COM Port, press BOOT button then RST button, release RST, then release BOOT button. Or unplug, press BOOT button meanwhile you plug in the usb cable to PC or SBC like a Raspberry Pi.
+          
+          ### Erase Flash:
+          #### Step for MicroPython .
+          ````bash
+          python -m esptool --chip esp32c3 erase_flash
+          ````
+          ### Then Flash:
+          - Put 3 binaries in the same folder you are executing the steps, example Downloads folder, you need to be in that folder where are the binaries.
+          ````bash
+          python -m esptool --chip esp32 -b 460800 --before default_reset --after hard_reset write_flash --flash_mode dio --flash_size 4MB --flash_freq 40m 0x1000 bootloader.bin 0x8000 partition-table.bin 0x10000 micropython.bin
+          ````
+          
+          ## Linux:
+          
+          ````bash
+          python -m venv esp-env
+          ````
+          
+          ````bash
+          source esp-env/bin/activate
+          ````
+          
+          ### Then install esptool:
+          ````bash
+          pip install esptool
+          ````
+          
+          ### Put TPicoC3  in BOOTLOADER MODE:
+          - With USB cable on USB COM Port, press BOOT button then RST button, release RST, then release BOOT button. Or unplug, press BOOT button meanwhile you plug in the usb cable to PC or SBC like a Raspberry Pi.
+          
+          ### Erase Flash:
+          #### Step for MicroPython.
+          ````bash
+          python -m esptool --chip esp32c3 erase_flash
+          ````
+          ### Then Flash:
+          - Put 3 binaries in the same folder you are executing the steps, example Downloads folder, you need to be in that folder where are the binaries.
+          ````bash
+          python -m esptool --chip esp32 -b 460800 --before default_reset --after hard_reset write_flash --flash_mode dio --flash_size 4MB --flash_freq 40m 0x1000 bootloader/bootloader.bin 0x8000 partition_table/partition-table.bin 0x10000 micropython.bin
+          ````
+                    
+          ### NOTE IN WINDOWS:
+          - If you get a PowerShell Scripts Policy Execution Exception that don't let you activate the Virtual Environment:
+          
+           ````bash
+          .\esp-env\Scripts\activate
+          ````
+          
+          - Then open a Terminal like Administrator and type:
+          
+          ````bash
+          Set-ExecutionPolicy Unrestricted
+          ````
+          - Close the Terminal now you can activate the Python Virtual Enmvironment
           
         draft: false
         prerelease: false
