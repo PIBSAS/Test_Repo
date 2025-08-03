@@ -1,4 +1,4 @@
-name: T-PicoC3 Display Lado ESP32 C3 MicroPython y Lado RP2040
+name: T-PicoC3 Display MicroPython for ESP32 C3 side and MicroPython for RP2040 side + st7789 + TPicoESPC3 wifi module
 
 permissions:
   contents: write
