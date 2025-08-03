@@ -1,4 +1,4 @@
-name: T-Display-C3
+name: TPicoC3 MicroPython for ESP32 C3 Side 
 
 permissions:
   contents: write
@@ -8,7 +8,7 @@ on:
     tags:
      - 'v*'
   schedule:
-     - cron: '0 0 * * 0'
+     - cron: '0 0 */14 * *'
   
   workflow_dispatch:
 
@@ -32,7 +32,7 @@ jobs:
       run: |
         mkdir -p esp
         cd esp
-        git clone -b v5.4 --recursive https://github.com/espressif/esp-idf.git
+        git clone -b v5.4.2 --recursive https://github.com/espressif/esp-idf.git
         cd esp-idf/tools
         python3 idf_tools.py install cmake
         cd ..
@@ -40,7 +40,6 @@ jobs:
         cd
 
     - name: Compilar MicroPython
-      continue-on-error: true
       run: |
         source esp/esp-idf/export.sh
         cd micropython/
@@ -52,7 +51,6 @@ jobs:
                -B build-ESP32_GENERIC_C3 build
  
     - name: Mover binarios MicroPython
-      if: success() || failure()
       run: |
         mkdir -p ./artifacts
         cp micropython/ports/esp32/build-ESP32_GENERIC_C3/micropython.bin ./artifacts/micropython.bin || true
