@@ -28,24 +28,24 @@ jobs:
 
     - name: Copy tdt_config and some fonts like frozen modules
       run: |
-       cp "$GITHUB_WORKSPACE/st7789_mpy/examples/configs/t-picoc3/tft_config.py" "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-       cp "$GITHUB_WORKSPACE/st7789_mpy/examples/configs/tdisplay_rp2040/tft_buttons.py" "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-       cp $GITHUB_WORKSPACE/st7789_mpy/examples/chango/chango_16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-       cp $GITHUB_WORKSPACE/st7789_mpy/examples/chango/chango_32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-       cp $GITHUB_WORKSPACE/st7789_mpy/examples/chango/chango_64.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/astrol.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/gotheng.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/greekc.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/italict.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/lowmat.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/marker.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/music.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/romancs.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga1_8x8.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga1_8x16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga1_16x16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga1_16x32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-             
+        cp "$GITHUB_WORKSPACE/st7789_mpy/examples/configs/t-picoc3/tft_config.py" "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+        cp "$GITHUB_WORKSPACE/st7789_mpy/examples/configs/tdisplay_rp2040/tft_buttons.py" "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+        cp $GITHUB_WORKSPACE/st7789_mpy/examples/chango/chango_16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/examples/chango/chango_32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/examples/chango/chango_64.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/astrol.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/gotheng.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/greekc.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/italict.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/lowmat.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/marker.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/music.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/romancs.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga1_8x8.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga1_8x16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga1_16x16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga1_16x32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+           
     - name: Copy TPicoESPC3 like frozen module
       run: |
         cp $GITHUB_WORKSPACE/TPicoESPC3/TPicoESPC3.py $GITHUB_WORKSPACE/micropython/ports/rp2/modules/
@@ -77,9 +77,6 @@ jobs:
                -D MICROPY_BOARD_DIR="$GITHUB_WORKSPACE/micropython/ports/esp32/boards/ESP32_GENERIC_C3" \
                -D USER_C_MODULES="$GITHUB_WORKSPACE/st7789_mpy/st7789/micropython.cmake" \
                -B build-ESP32_GENERIC_C3 build
-    
-    #- name: List files after build
-    #  run: ls -l $GITHUB_WORKSPACEmicropython/ports/esp32/build-ESP32_GENERIC_C3/
     
     - name: Build MicroPython for RP2040
       run: |
