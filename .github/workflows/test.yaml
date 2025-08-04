@@ -34,6 +34,14 @@ jobs:
         with:
           python-version: ${{ steps.idf_ver.outputs.PYTHON_VER }}
 
+      - name: Cache pip dependencies
+        uses: actions/cache@v4.2.3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('micropython/tools/ci.sh') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -88,6 +96,7 @@ jobs:
           make $MAKEOPTS -C mpy-cross
           make $MAKEOPTS -C ports/esp32 submodules
           make $MAKEOPTS -C ports/esp32 BOARD=ESP32_GENERIC_C3
+
 
 
 
