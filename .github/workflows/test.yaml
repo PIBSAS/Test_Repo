@@ -17,24 +17,29 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4.2.2
-
+      
       - name: Clone MicroPython
         run: |
           git clone --depth 1 https://github.com/micropython/micropython.git
-
-                
+       
       - id: idf_ver
         name: Read ESP-IDF and Python version from tools/ci.sh
         run: |
           source micropython/tools/ci.sh
           echo "IDF_VER=${IDF_VER}" | tee -a "$GITHUB_OUTPUT"
           echo "PYTHON_VER=${PYTHON_VER}" | tee -a "$GITHUB_OUTPUT"
-        # echo "IDF_VER=${IDF_VER}-py${PYTHON_VER}" | tee "$GITHUB_OUTPUT"
       
       - name: Setup Python from ci.sh
         uses: actions/setup-python@v5.6.0
         with:
           python-version: ${{ steps.idf_ver.outputs.PYTHON_VER }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git coreutils wget make cmake ninja-build ccache gcc g++ python3-pip python3-setuptools python3-venv
+          pip3 install --upgrade pip
+          pip3 install pyelftools ar
 
       - name: Cache esp-idf
         id: cache-idf
@@ -65,13 +70,6 @@ jobs:
           path: ~/.ccache
           key: ccache-${{ runner.os }}-${{ hashFiles('**/tools/ci.sh') }}
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y git wget make cmake ninja-build ccache gcc g++ python3-pip python3-setuptools python3-venv
-          pip3 install --upgrade pip
-          pip3 install pyelftools ar
-
       - name: Build mpy-cross and ESP32-C3 port
         env:
           IDF_PATH: ${{ github.workspace }}/esp-idf
@@ -82,6 +80,7 @@ jobs:
           make $MAKEOPTS -C mpy-cross
           make $MAKEOPTS -C ports/esp32 submodules
           make $MAKEOPTS -C ports/esp32 BOARD=ESP32_GENERIC_C3
+
 
 
 
