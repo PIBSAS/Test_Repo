@@ -1,4 +1,4 @@
-name: TPicoC3 MicroPython for ESP32 C3 Side + ST7789
+name: MicroPython LilyGo TPico C3 Display for ESP32 C3 Side + ST7789
 
 permissions:
   contents: write
@@ -22,6 +22,21 @@ jobs:
       
     - name: Clone Micropython
       run: git clone --recurse-submodules https://github.com/micropython/micropython.git
+    
+    - id: idf_ver
+      name: Read ESP-IDF and Python version from tools/ci.sh
+      run: |
+        source micropython/tools/ci.sh
+        echo "IDF_VER=${IDF_VER}-py${PYTHON_VER}" | tee "$GITHUB_OUTPUT"
+    
+    - name: Restore ESP-IDF cache
+      id: cache_esp_idf
+      uses: actions/cache@v4
+      with:
+        path: |
+          esp/esp-idf/
+          ~/.espressif/
+        key: esp-idf-${{ steps.idf_ver.outputs.IDF_VER }}
 
     - name: Clone st7789_mpy
       run: git clone --recursive https://github.com/russhughes/st7789_mpy.git
@@ -36,17 +51,38 @@ jobs:
       run: |
        sudo apt-get update
        sudo apt-get install -y build-essential git wget flex bison gperf pkg-config python3 python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
+    
+    - name: Setup C code formatter
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y uncrustify
+        uncrustify --version
 
-    - name: Clone ESP-IDF
+    - name: Run C code formatting
+      run: tools/codeformat.py -v -c
+
+    - name: Clone and install ESP-IDF (if not cached)
+      if: steps.cache_esp_idf.outputs.cache-hit != 'true'
       run: |
         mkdir -p esp
         cd esp
-        git clone -b v5.4.2 --recursive https://github.com/espressif/esp-idf.git
+        git clone -b ${{ steps.idf_ver.outputs.IDF_VER%%-* }} --recursive https://github.com/espressif/esp-idf.git
         cd esp-idf/tools
         python3 idf_tools.py install cmake
         cd ..
         ./install.sh esp32c3
         cd
+
+    #- name: Clone ESP-IDF
+     # run: |
+      #  mkdir -p esp
+       # cd esp
+        #git clone -b v5.4.2 --recursive https://github.com/espressif/esp-idf.git
+        #cd esp-idf/tools
+        #python3 idf_tools.py install cmake
+       # cd ..
+        #./install.sh esp32c3
+        #cd
 
     - name: Copiar particiones personalizadas
       run: cp "$GITHUB_WORKSPACE/partitions.csv" "$GITHUB_WORKSPACE/micropython/ports/esp32/my_partitions.csv"
