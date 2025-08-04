@@ -33,56 +33,69 @@ jobs:
         with:
           python-version: ${{ steps.idf_ver.outputs.PYTHON_VER }}
 
-      - name: Cache pip dependencies
-        uses: actions/cache@v4.2.3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('micropython/tools/ci.sh') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y git coreutils wget make cmake ninja-build ccache gcc g++ python3-pip python3-setuptools python3-venv
           pip3 install --upgrade pip
           pip3 install pyelftools ar
-      - name: Cache esp-idf
-        id: cache-idf
+      
+      - name: Cache ESP-IDF and environment
+        id: cache-esp
         uses: actions/cache@v4.2.3
         with:
-          path: esp-idf
-          key: esp-idf-${{ steps.idf_ver.outputs.IDF_VER }}
+          path: |
+            esp-idf
+            ~/.espressif
+          key: esp-full-${{ runner.os }}-${{ steps.idf_ver.outputs.IDF_VER }}-${{ hashFiles('micropython/tools/ci.sh') }}
           restore-keys: |
-            esp-idf-
-        
+            esp-full-${{ runner.os }}-${{ steps.idf_ver.outputs.IDF_VER }}-
       - name: Setup ESP-IDF
-        env:
-          IDF_VER: ${{ steps.idf_ver.outputs.IDF_VER }}
-        if: steps.cache-idf.outputs.cache-hit != 'true'
         run: |
-          git clone --depth 1 --branch $IDF_VER https://github.com/espressif/esp-idf.git
-          git -C esp-idf submodule update --init --recursive --filter=tree:0
-          ./esp-idf/install.sh
-      - name: Export ESP-IDF environment
-        shell: bash
-        env:
-          PATH: /usr/bin:/bin:${{ env.PATH }}
+          if [ ! -d "esp-idf" ]; then
+            git clone --depth 1 --branch ${{ steps.idf_ver.outputs.IDF_VER }} https://github.com/espressif/esp-idf.git
+            git -C esp-idf submodule update --init --recursive --depth=1
+          fi
+          
+          # Crear entorno virtual si no existe
+          if [ ! -d "$HOME/.espressif/python_env" ]; then
+            echo "Instalando entorno virtual de ESP-IDF..."
+            ./esp-idf/install.sh
+          fi
+     # - name: Setup ESP-IDF
+      #  env:
+       #   IDF_VER: ${{ steps.idf_ver.outputs.IDF_VER }}
+        #if: steps.cache-idf.outputs.cache-hit != 'true'
+        #run: |
+         # git clone --depth 1 --branch $IDF_VER https://github.com/espressif/esp-idf.git
+          #git -C esp-idf submodule update --init --recursive --filter=tree:0
+          #./esp-idf/install.sh
+
+      - name: Set up environment
         run: |
-          echo "PATH before source: $PATH"
           source esp-idf/export.sh
-          env
-      - name: Cache ccache
-        uses: actions/cache@v4.2.3
-        with:
-          path: ~/.ccache
-          key: ccache-${{ runner.os }}-${{ hashFiles('**/tools/ci.sh') }}
+          echo "IDF_PATH=$GITHUB_WORKSPACE/esp-idf" >> $GITHUB_ENV
+          idf.py --version
+          
+     # - name: Export ESP-IDF environment
+      #  shell: bash
+       # env:
+        #  PATH: /usr/bin:/bin:${{ env.PATH }}
+       # run: |
+        #  echo "PATH before source: $PATH"
+        #  source esp-idf/export.sh
+         # env
+     # - name: Cache ccache
+      #  uses: actions/cache@v4.2.3
+      #  with:
+      #    path: ~/.ccache
+       #   key: ccache-${{ runner.os }}-${{ hashFiles('**/tools/ci.sh') }}
 
       - name: Build mpy-cross and ESP32-C3 port
-        shell: bash
-        env:
-          IDF_PATH: ${{ github.workspace }}/esp-idf
-          PATH: ${{ github.workspace }}/esp-idf/tools:/usr/bin:/bin:${{ env.PATH }}
+        #shell: bash
+        #env:
+         # IDF_PATH: ${{ github.workspace }}/esp-idf
+          #PATH: ${{ github.workspace }}/esp-idf/tools:/usr/bin:/bin:${{ env.PATH }}
         run: |
           source esp-idf/export.sh
           cd ${{ github.workspace }}/micropython
