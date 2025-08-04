@@ -30,7 +30,16 @@ jobs:
         uses: actions/setup-python@v5.6.0
         with:
           python-version: ${{ steps.idf_ver.outputs.PYTHON_VER }}
-      
+
+      - name: Cache esp-idf
+        id: cache-idf
+        uses: actions/cache@v4.2.3
+        with:
+          path: esp-idf
+          key: esp-idf-${{ steps.idf_ver.outputs.IDF_VER }}
+          restore-keys: |
+            esp-idf-
+        
       - name: Setup ESP-IDF
         env:
           IDF_VER: ${{ steps.idf_ver.outputs.IDF_VER }}
@@ -44,15 +53,6 @@ jobs:
         run: |
           source esp-idf/export.sh
           env
-
-      - name: Cache esp-idf
-        id: cache-idf
-        uses: actions/cache@v4.2.3
-        with:
-          path: esp-idf
-          key: esp-idf-${{ env.IDF_VER }}
-          restore-keys: |
-            esp-idf-
 
       - name: Cache ccache
         uses: actions/cache@v4.2.3
@@ -77,4 +77,5 @@ jobs:
           make $MAKEOPTS -C mpy-cross
           make $MAKEOPTS -C ports/esp32 submodules
           make $MAKEOPTS -C ports/esp32 BOARD=ESP32_GENERIC_C3
+
 
