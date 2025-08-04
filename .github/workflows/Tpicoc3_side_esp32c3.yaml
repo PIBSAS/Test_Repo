@@ -59,8 +59,8 @@ jobs:
         export IDF_TARGET=esp32c3
         cd ports/esp32/
         idf.py -D MICROPY_BOARD=ESP32_GENERIC_C3 \
-               -D MICROPY_BOARD_DIR="boards/ESP32_GENERIC_C3" \
-               -D MICROPY_BOARD_PARTITION_CSV=boards/my_partitions.csv \
+               -D MICROPY_BOARD_DIR="$GITHUB_WORKSPACE/micropython/ports/esp32/boards/ESP32_GENERIC_C3" \
+               -D MICROPY_BOARD_PARTITION_CSV="$GITHUB_WORKSPACE/micropython/ports/esp32/boards/my_partitions.csv" \
                -D USER_C_MODULES="$GITHUB_WORKSPACE/st7789_mpy/st7789" \
                -B build-ESP32_GENERIC_C3 build
  
