@@ -13,7 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IDF_CCACHE_ENABLE: 1
-      MAKEOPTS: "-j$(nproc)"
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4.2.2
@@ -89,6 +88,7 @@ jobs:
           PATH: ${{ github.workspace }}/esp-idf/tools:/usr/bin:/bin:${{ env.PATH }}
         run: |
           source esp-idf/export.sh
-          make $MAKEOPTS -C mpy-cross
-          make $MAKEOPTS -C ports/esp32 submodules
-          make $MAKEOPTS -C ports/esp32 BOARD=ESP32_GENERIC_C3
+          make -j$(nproc) -C mpy-cross
+          make -j$(nproc) -C ports/esp32 submodules
+          make -j$(nproc) -C ports/esp32 BOARD=ESP32_GENERIC_C3
+
