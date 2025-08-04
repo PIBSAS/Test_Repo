@@ -1,4 +1,4 @@
-name: Build ESP32-C3 MicroPython
+name: Build ESP32-C3 MicroPython.
 
 on:
   push:
@@ -114,3 +114,4 @@ jobs:
           path: |
             micropython/ports/esp32/build-ESP32_GENERIC_C3/firmware.bin
             micropython/ports/esp32/build-ESP32_GENERIC_C3/micropython.bin
+
