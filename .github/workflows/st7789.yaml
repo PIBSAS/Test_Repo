@@ -78,14 +78,25 @@ jobs:
           cp st7789_mpy/fonts/vector/*.py micropython/ports/esp32/modules/
           echo "freeze('modules', 'tft_config.py')" >> micropython/ports/esp32/manifest.py
           echo "freeze('modules', '*.py')" >> micropython/ports/esp32/manifest.py
-          
+
+      - name: Create custom partition table
+        run: |
+          cat > micropython/ports/esp32/partitions_custom.csv <<EOF
+          # Custom partition table for ST7789 driver (based on partitions-4MiBplus.csv)
+          # Name,   Type, SubType, Offset,  Size, Flags
+          nvs,      data, nvs,     0x9000,  0x6000,
+          phy_init, data, phy,     0xf000,  0x1000,
+          factory,  app,  factory, 0x10000, 0x220000,
+          vfs,      data, spiffs,  ,        0x1D0000,
+          EOF
+      
       - name: Build mpy-cross and ESP32-C3 port
         run: |
           source esp-idf/export.sh
           cd ${{ github.workspace }}/micropython
           make -j$(nproc) -C mpy-cross
           make -j$(nproc) -C ports/esp32 submodules
-          make -j$(nproc) -C ports/esp32 USER_C_MODULES=${{ github.workspace }}/st7789_mpy/st7789/micropython.cmake BOARD=ESP32_GENERIC_C3
+          make -j$(nproc) -C ports/esp32 USER_C_MODULES=${{ github.workspace }}/st7789_mpy/st7789/micropython.cmake BOARD=ESP32_GENERIC_C3 PARTITION_TABLE_CSV="partitions_custom.csv"
           make -j$(nproc) -C ports/esp32 BOARD=ESP32_GENERIC_C3
           
       - name: Verify build artifacts
