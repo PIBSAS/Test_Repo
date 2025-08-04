@@ -87,12 +87,13 @@ jobs:
         env:
           IDF_PATH: ${{ github.workspace }}/esp-idf
           PATH: ${{ github.workspace }}/esp-idf/tools:/usr/bin:/bin:${{ env.PATH }}
-          MAKEOPTS: "-j$(nproc)"
         run: |
           source esp-idf/export.sh
+          MAKEOPTS: "-j$(nproc)"
           make $MAKEOPTS -C mpy-cross
           make $MAKEOPTS -C ports/esp32 submodules
           make $MAKEOPTS -C ports/esp32 BOARD=ESP32_GENERIC_C3
+
 
 
 
