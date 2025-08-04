@@ -75,8 +75,10 @@ jobs:
 
       - name: Export ESP-IDF environment
         shell: bash
+        env:
+          PATH: /usr/bin:/bin:${{ env.PATH }}
         run: |
-          export PATH=/usr/bin:/bin:$PATH
+          echo "PATH before source: $PATH"
           source esp-idf/export.sh
           env
 
@@ -97,6 +99,7 @@ jobs:
           make $MAKEOPTS -C mpy-cross
           make $MAKEOPTS -C ports/esp32 submodules
           make $MAKEOPTS -C ports/esp32 BOARD=ESP32_GENERIC_C3
+
 
 
 
