@@ -72,18 +72,12 @@ jobs:
       - name: Add ST7789 library from russhughes
         run: |
           git clone --depth 1 https://github.com/russhughes/st7789_mpy.git
-          mkdir -p micropython/drivers/st7789
-          cp st7789_mpy/st7789/st7789.c micropython/drivers/st7789/
-          cp st7789_mpy/st7789/st7789.h micropython/drivers/st7789/
-          cp st7789_mpy/st7789/mpfile.c micropython/drivers/st7789/
-          cp st7789_mpy/st7789/mpfile.h micropython/drivers/st7789/
-          
-          # Agregar el driver al Makefile
-          echo "DRIVERS_EXTRA = drivers/st7789" >> micropython/ports/esp32/mpconfigport.mk
-          
-          # Configurar opciones necesarias
-          echo "CFLAGS_EXTRA += -DMODULE_ST7789_ENABLED=1" >> micropython/ports/esp32/mpconfigport.mk
-          echo "CFLAGS_EXTRA += -DMICROPY_PY_FRAMEBUF=1" >> micropython/ports/esp32/mpconfigport.mk
+          mkdir -p micropython/ports/esp32/modules
+          cp "$GITHUB_WORKSPACE/st7789_mpy/examples/configs/tdisplay_rp2040/tft_config.py" "$GITHUB_WORKSPACE/micropython/ports/esp32/modules/"
+          cp "$GITHUB_WORKSPACE/st7789_mpy/examples/configs/tdisplay_rp2040/tft_buttons.py" "$GITHUB_WORKSPACE/micropython/ports/esp32/modules/"
+          cp st7789_mpy/fonts/vector/font*.py micropython/ports/esp32/modules/
+          echo "freeze('modules', 'tft_config.py')" >> micropython/ports/esp32/manifest.py
+          echo "freeze('modules', 'font*.py')" >> micropython/ports/esp32/manifest.py
           
       - name: Build mpy-cross and ESP32-C3 port
         run: |
@@ -91,6 +85,7 @@ jobs:
           cd ${{ github.workspace }}/micropython
           make -j$(nproc) -C mpy-cross
           make -j$(nproc) -C ports/esp32 submodules
+          make -j$(nproc) -C ports/esp32 USER_C_MODULES=${{ github.workspace }}/st7789_mpy/st7789/micropython.cmake BOARD=ESP32_GENERIC_C3
           make -j$(nproc) -C ports/esp32 BOARD=ESP32_GENERIC_C3
           
       - name: Verify build artifacts
