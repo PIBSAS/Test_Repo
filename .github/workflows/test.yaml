@@ -41,6 +41,12 @@ jobs:
           pip3 install --upgrade pip
           pip3 install pyelftools ar
 
+      - name: Debug shell and dirname
+        run: |
+          echo "Shell: $SHELL"
+          which dirname
+          dirname /foo/bar/baz
+
       - name: Cache esp-idf
         id: cache-idf
         uses: actions/cache@v4.2.3
@@ -60,6 +66,7 @@ jobs:
           ./esp-idf/install.sh
 
       - name: Export ESP-IDF environment
+        shell: bash
         run: |
           source esp-idf/export.sh
           env
@@ -71,6 +78,7 @@ jobs:
           key: ccache-${{ runner.os }}-${{ hashFiles('**/tools/ci.sh') }}
 
       - name: Build mpy-cross and ESP32-C3 port
+        shell: bash
         env:
           IDF_PATH: ${{ github.workspace }}/esp-idf
           PATH: ${{ github.workspace }}/esp-idf/tools:$PATH
@@ -80,6 +88,7 @@ jobs:
           make $MAKEOPTS -C mpy-cross
           make $MAKEOPTS -C ports/esp32 submodules
           make $MAKEOPTS -C ports/esp32 BOARD=ESP32_GENERIC_C3
+
 
 
 
