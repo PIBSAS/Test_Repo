@@ -72,23 +72,19 @@ jobs:
           ./esp-idf/install.sh
 
       - name: Export ESP-IDF environment
-        #shell: bash
-        #env:
-         # PATH: /usr/bin:/bin:${{ env.PATH }}
+        shell: bash
+        env:
+          PATH: /usr/bin:/bin:${{ env.PATH }}
         run: |
-          source esp-idf/export.sh
-          echo "IDF_PATH=$GITHUB_WORKSPACE/esp-idf" >> $GITHUB_ENV
-          echo "PATH=$PATH" >> $GITHUB_ENV
-          echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
-          idf.py --version
-          #if ! source esp-idf/export.sh > /dev/null 2>&1; then
-           # echo "Entorno virtual no encontrado, reinstalando..."
-            #./esp-idf/install.sh
-          #fi
+          if ! source esp-idf/export.sh > /dev/null 2>&1; then
+            echo "Entorno virtual no encontrado, reinstalando..."
+            ./esp-idf/install.sh
+          fi
+          
           #echo "PATH before source: $PATH"
-          #source esp-idf/export.sh
-          #echo "export CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
-          #ccache -s
+          source esp-idf/export.sh
+          echo "export CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
+          ccache -s
           #env
 
       - name: Cache ccache
@@ -124,4 +120,5 @@ jobs:
           path: |
             micropython/ports/esp32/build-ESP32_GENERIC_C3/firmware.bin
             micropython/ports/esp32/build-ESP32_GENERIC_C3/micropython.bin
+
 
