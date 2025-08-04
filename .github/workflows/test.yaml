@@ -77,6 +77,10 @@ jobs:
         env:
           PATH: /usr/bin:/bin:${{ env.PATH }}
         run: |
+          if ! source esp-idf/export.sh > /dev/null 2>&1; then
+            echo "Entorno virtual no encontrado, reinstalando..."
+            ./esp-idf/install.sh
+          fi
           echo "PATH before source: $PATH"
           source esp-idf/export.sh
           echo "export CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
@@ -117,3 +121,4 @@ jobs:
           path: |
             micropython/ports/esp32/build-ESP32_GENERIC_C3/firmware.bin
             micropython/ports/esp32/build-ESP32_GENERIC_C3/micropython.bin
+
