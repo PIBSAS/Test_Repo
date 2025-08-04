@@ -1,0 +1,104 @@
+name: Build ESP32-C3 MicroPython with ST7789.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-esp32-c3:
+    runs-on: ubuntu-latest
+    env:
+      IDF_CCACHE_ENABLE: 1
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4.2.2
+      
+      - name: Clone MicroPython
+        run: |
+          git clone --depth 1 https://github.com/micropython/micropython.git
+       
+      - id: idf_ver
+        name: Read ESP-IDF and Python version from tools/ci.sh
+        run: |
+          source micropython/tools/ci.sh
+          echo "IDF_VER=${IDF_VER}" | tee -a "$GITHUB_OUTPUT"
+          echo "PYTHON_VER=${PYTHON_VER}" | tee -a "$GITHUB_OUTPUT"
+      
+      - name: Setup Python from ci.sh
+        uses: actions/setup-python@v5.6.0
+        with:
+          python-version: ${{ steps.idf_ver.outputs.PYTHON_VER }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git coreutils wget make cmake ninja-build ccache gcc g++ python3-pip python3-setuptools python3-venv
+          pip3 install --upgrade pip
+          pip3 install pyelftools ar
+      
+      - name: Cache ESP-IDF and environment
+        id: cache-esp
+        uses: actions/cache@v4.2.3
+        with:
+          path: |
+            esp-idf
+            ~/.espressif
+          key: esp-full-${{ runner.os }}-${{ steps.idf_ver.outputs.IDF_VER }}-${{ hashFiles('micropython/tools/ci.sh') }}
+          restore-keys: |
+            esp-full-${{ runner.os }}-${{ steps.idf_ver.outputs.IDF_VER }}-
+      
+      - name: Setup ESP-IDF
+        run: |
+          if [ ! -d "esp-idf" ]; then
+            git clone --depth 1 --branch ${{ steps.idf_ver.outputs.IDF_VER }} https://github.com/espressif/esp-idf.git
+            git -C esp-idf submodule update --init --recursive --depth=1
+          fi
+          
+          if [ ! -d "$HOME/.espressif/python_env" ]; then
+            echo "Instalando entorno virtual de ESP-IDF..."
+            ./esp-idf/install.sh
+          fi
+     
+      - name: Set up environment
+        run: |
+          source esp-idf/export.sh
+          echo "IDF_PATH=$GITHUB_WORKSPACE/esp-idf" >> $GITHUB_ENV
+          idf.py --version
+
+      - name: Add integrated ST7789 driver
+        run: |
+          mkdir -p micropython/ports/esp32/modules
+          
+          # Agregar el controlador st7789 integrado al manifest
+          echo "freeze('$(pwd)/micropython/drivers/display', 'st7789.py')" >> micropython/ports/esp32/manifest.py
+          
+          # (Opcional) Agregar otros controladores relacionados
+          echo "freeze('$(pwd)/micropython/drivers/display', 'st77xx.py')" >> micropython/ports/esp32/manifest.py
+          
+          # (Opcional) Agregar fuentes básicas
+          echo "freeze('$(pwd)/micropython/drivers/font', 'font_petme128_8x8.py')" >> micropython/ports/esp32/manifest.py
+          echo "freeze('$(pwd)/micropython/drivers/font', 'font_petme128_16x16.py')" >> micropython/ports/esp32/manifest.py
+          
+      - name: Build mpy-cross and ESP32-C3 port
+        run: |
+          source esp-idf/export.sh
+          cd ${{ github.workspace }}/micropython
+          make -j$(nproc) -C mpy-cross
+          make -j$(nproc) -C ports/esp32 submodules
+          make -j$(nproc) -C ports/esp32 BOARD=ESP32_GENERIC_C3
+          
+      - name: Verify build artifacts
+        run: |
+          ls -lh micropython/ports/esp32/build-ESP32_GENERIC_C3/*.bin
+
+      - name: Upload firmware artifacts
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: esp32c3-firmware
+          path: |
+            micropython/ports/esp32/build-ESP32_GENERIC_C3/firmware.bin
+            micropython/ports/esp32/build-ESP32_GENERIC_C3/micropython.bin
