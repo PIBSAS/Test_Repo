@@ -36,7 +36,7 @@ jobs:
         cd esp-idf/tools
         python3 idf_tools.py install cmake
         cd ..
-        ./install.sh esp32
+        ./install.sh esp32c3
         cd
 
     - name: Compilar MicroPython
@@ -44,7 +44,7 @@ jobs:
         source esp/esp-idf/export.sh
         cd micropython/
         make -C mpy-cross
-        export IDF_TARGET=esp32
+        export IDF_TARGET=esp32c3
         cd ports/esp32/
         idf.py -D MICROPY_BOARD=ESP32_GENERIC_C3 \
                -D MICROPY_BOARD_DIR="$GITHUB_WORKSPACE/micropython/ports/esp32/boards/ESP32_GENERIC_C3" \
