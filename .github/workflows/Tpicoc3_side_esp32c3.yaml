@@ -1,4 +1,4 @@
-name: TPicoC3 MicroPython for ESP32 C3 Side 
+name: TPicoC3 MicroPython for ESP32 C3 Side + ST7789
 
 permissions:
   contents: write
@@ -22,6 +22,15 @@ jobs:
       
     - name: Clone Micropython
       run: git clone --recurse-submodules https://github.com/micropython/micropython.git
+
+    - name: Clone st7789_mpy
+      run: git clone --recursive https://github.com/russhughes/st7789_mpy.git
+
+    - name: Copiar módulos Python a frozen modules
+      run: |
+        mkdir -p micropython/ports/esp32/modules
+        cp st7789_mpy/examples/configs/t-picoc3/tft_config.py micropython/ports/esp32/modules/
+        cp st7789_mpy/examples/configs/tdisplay_rp2040/tft_buttons.py micropython/ports/esp32/modules/
 
     - name: Install dependencies
       run: |
@@ -48,6 +57,7 @@ jobs:
         cd ports/esp32/
         idf.py -D MICROPY_BOARD=ESP32_GENERIC_C3 \
                -D MICROPY_BOARD_DIR="$GITHUB_WORKSPACE/micropython/ports/esp32/boards/ESP32_GENERIC_C3" \
+               -D USER_C_MODULES="$GITHUB_WORKSPACE/st7789_mpy/st7789" \
                -B build-ESP32_GENERIC_C3 build
  
     - name: Mover binarios MicroPython
