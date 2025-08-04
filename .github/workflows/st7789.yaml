@@ -75,9 +75,9 @@ jobs:
           mkdir -p micropython/ports/esp32/modules
           cp "$GITHUB_WORKSPACE/st7789_mpy/examples/configs/tdisplay_rp2040/tft_config.py" "$GITHUB_WORKSPACE/micropython/ports/esp32/modules/"
           cp "$GITHUB_WORKSPACE/st7789_mpy/examples/configs/tdisplay_rp2040/tft_buttons.py" "$GITHUB_WORKSPACE/micropython/ports/esp32/modules/"
-          cp st7789_mpy/fonts/vector/font*.py micropython/ports/esp32/modules/
+          cp st7789_mpy/fonts/vector/*.py micropython/ports/esp32/modules/
           echo "freeze('modules', 'tft_config.py')" >> micropython/ports/esp32/manifest.py
-          echo "freeze('modules', 'font*.py')" >> micropython/ports/esp32/manifest.py
+          echo "freeze('modules', '*.py')" >> micropython/ports/esp32/manifest.py
           
       - name: Build mpy-cross and ESP32-C3 port
         run: |
