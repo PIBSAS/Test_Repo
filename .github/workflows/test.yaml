@@ -47,7 +47,6 @@ jobs:
           sudo apt-get install -y git coreutils wget make cmake ninja-build ccache gcc g++ python3-pip python3-setuptools python3-venv
           pip3 install --upgrade pip
           pip3 install pyelftools ar
-
           mkdir -p ~/.ccache
           echo "max_size = 500M" > ~/.ccache/ccache.conf
           echo "cache_dir = $HOME/.ccache" >> ~/.ccache/ccache.conf
@@ -68,6 +67,7 @@ jobs:
           esp_idf_version: ${{ steps.idf_ver.outputs.IDF_VER }}
           python_version: ${{ steps.idf_ver.outputs.PYTHON_VER }}
           target: esp32c3
+          command: "echo 'Skipping automatic build' "
      # - name: Espressif IoT Development Framework (ESP-IDF)
         # You may pin to the exact commit or the version.
         # uses: espressif/esp-idf-ci-action@8cd22ae10042fadc37890e81e9988a9113e7b506
@@ -92,20 +92,20 @@ jobs:
           #git -C esp-idf submodule update --init --recursive --filter=tree:0
           #./esp-idf/install.sh
 
-      - name: Export ESP-IDF environment
-        shell: bash
-        env:
-          PATH: /usr/bin:/bin:${{ env.PATH }}
-        run: |
-          if ! source esp-idf/export.sh > /dev/null 2>&1; then
-            echo "Entorno virtual no encontrado, reinstalando..."
-            ./esp-idf/install.sh
-          fi
-          echo "PATH before source: $PATH"
-          source esp-idf/export.sh
-          echo "export CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
-          ccache -s
-          env
+      #- name: Export ESP-IDF environment
+       # shell: bash
+       # env:
+        #  PATH: /usr/bin:/bin:${{ env.PATH }}
+        #run: |
+         # if ! source esp-idf/export.sh > /dev/null 2>&1; then
+          #  echo "Entorno virtual no encontrado, reinstalando..."
+           # ./esp-idf/install.sh
+          #fi
+          #echo "PATH before source: $PATH"
+          #source esp-idf/export.sh
+          #echo "export CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
+          #ccache -s
+          #env
 
       - name: Cache ccache
         id: cache-ccache
@@ -116,18 +116,17 @@ jobs:
 
       - name: Build mpy-cross and ESP32-C3 port
         shell: bash
-        env:
-          IDF_PATH: ${{ github.workspace }}/esp-idf
-          PATH: ${{ github.workspace }}/esp-idf/tools:/usr/bin:/bin:${{ env.PATH }}
+        #env:
+        #  IDF_PATH: ${{ github.workspace }}/esp-idf
+        #  PATH: ${{ github.workspace }}/esp-idf/tools:/usr/bin:/bin:${{ env.PATH }}
         run: |
-          source esp-idf/export.sh
+         # source esp-idf/export.sh
           export IDF_TARGET=esp32c3
           export CCACHE_DIR="$HOME/.ccache"
           cd ${{ github.workspace }}/micropython
           make -j$(nproc) -C mpy-cross
           make -j$(nproc) -C ports/esp32 submodules
           make -j$(nproc) -C ports/esp32 BOARD=ESP32_GENERIC_C3
-
           ccache -s
 
       - name: Verify build artifacts
@@ -141,5 +140,3 @@ jobs:
           path: |
             micropython/ports/esp32/build-ESP32_GENERIC_C3/firmware.bin
             micropython/ports/esp32/build-ESP32_GENERIC_C3/micropython.bin
-
-
