@@ -49,7 +49,7 @@ jobs:
         cd
 
     - name: Copiar particiones personalizadas
-      run: cp "$GITHUB_WORKSPACE/partitions.csv" "$GITHUB_WORKSPACE/micropython/ports/esp32/boards/my_partitions.csv"
+      run: cp "$GITHUB_WORKSPACE/partitions.csv" "$GITHUB_WORKSPACE/micropython/ports/esp32/my_partitions.csv"
 
     - name: Compilar MicroPython
       run: |
