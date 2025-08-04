@@ -16,7 +16,7 @@ jobs:
       MAKEOPTS: "-j$(nproc)"
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
       
       - id: idf_ver
         name: Read ESP-IDF and Python version from tools/ci.sh
@@ -24,10 +24,10 @@ jobs:
           source micropython/tools/ci.sh
           echo "IDF_VER=${IDF_VER}" | tee -a "$GITHUB_OUTPUT"
           echo "PYTHON_VER=${PYTHON_VER}" | tee -a "$GITHUB_OUTPUT"
-          # echo "IDF_VER=${IDF_VER}-py${PYTHON_VER}" | tee "$GITHUB_OUTPUT"
+        # echo "IDF_VER=${IDF_VER}-py${PYTHON_VER}" | tee "$GITHUB_OUTPUT"
       
       - name: Setup Python from ci.sh
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5.6.0
         with:
           python-version: ${{ steps.idf_ver.outputs.PYTHON_VER }}
       
@@ -47,7 +47,7 @@ jobs:
 
       - name: Cache esp-idf
         id: cache-idf
-        uses: actions/cache@v3
+        uses: actions/cache@v4.2.3
         with:
           path: esp-idf
           key: esp-idf-${{ env.IDF_VER }}
@@ -55,7 +55,7 @@ jobs:
             esp-idf-
 
       - name: Cache ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v4.2.3
         with:
           path: ~/.ccache
           key: ccache-${{ runner.os }}-${{ hashFiles('**/tools/ci.sh') }}
@@ -77,3 +77,4 @@ jobs:
           make $MAKEOPTS -C mpy-cross
           make $MAKEOPTS -C ports/esp32 submodules
           make $MAKEOPTS -C ports/esp32 BOARD=ESP32_GENERIC_C3
+
