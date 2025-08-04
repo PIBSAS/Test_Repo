@@ -88,7 +88,9 @@ jobs:
           PATH: ${{ github.workspace }}/esp-idf/tools:/usr/bin:/bin:${{ env.PATH }}
         run: |
           source esp-idf/export.sh
+          cd ${{ github.workspace }}/micropython
           make -j$(nproc) -C mpy-cross
           make -j$(nproc) -C ports/esp32 submodules
           make -j$(nproc) -C ports/esp32 BOARD=ESP32_GENERIC_C3
+
 
