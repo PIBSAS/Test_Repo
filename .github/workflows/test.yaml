@@ -48,12 +48,17 @@ jobs:
           pip3 install --upgrade pip
           pip3 install pyelftools ar
 
+          mkdir -p ~/.ccache
+          echo "max_size = 500M" > ~/.ccache/ccache.conf
+          echo "cache_dir = $HOME/.ccache" >> ~/.ccache/ccache.conf
+          ccache -s
+
       - name: Cache esp-idf
         id: cache-idf
         uses: actions/cache@v4.2.3
         with:
           path: esp-idf
-          key: esp-idf-${{ steps.idf_ver.outputs.IDF_VER }}
+          key: esp-idf-${{ steps.idf_ver.outputs.IDF_VER }}-${{ hashFiles('micropython/tools/ci.sh') }}
           restore-keys: |
             esp-idf-
         
@@ -73,13 +78,16 @@ jobs:
         run: |
           echo "PATH before source: $PATH"
           source esp-idf/export.sh
+          echo "export CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
+          ccache -s
           env
 
       - name: Cache ccache
+        id: cache-ccache
         uses: actions/cache@v4.2.3
         with:
           path: ~/.ccache
-          key: ccache-${{ runner.os }}-${{ hashFiles('**/tools/ci.sh') }}
+          key: ccache-${{ runner.os }}-${{ hashFiles('**/tools/ci.sh') }}-${{ steps.idf_ver.outputs.IDF_VER }}
 
       - name: Build mpy-cross and ESP32-C3 port
         shell: bash
@@ -88,9 +96,17 @@ jobs:
           PATH: ${{ github.workspace }}/esp-idf/tools:/usr/bin:/bin:${{ env.PATH }}
         run: |
           source esp-idf/export.sh
+          export IDF_TARGET=esp32c3
+          export CCACHE_DIR="$HOME/.ccache"
           cd ${{ github.workspace }}/micropython
           make -j$(nproc) -C mpy-cross
           make -j$(nproc) -C ports/esp32 submodules
           make -j$(nproc) -C ports/esp32 BOARD=ESP32_GENERIC_C3
+
+          ccache -s
+
+      - name: Verify build artifacts
+        run: |
+          ls -lh micropython/ports/esp32/build-ESP32_GENERIC_C3/firmware.bin
 
 
