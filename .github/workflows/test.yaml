@@ -60,46 +60,30 @@ jobs:
           key: esp-idf-${{ steps.idf_ver.outputs.IDF_VER }}-${{ hashFiles('micropython/tools/ci.sh') }}
           restore-keys: |
             esp-idf-
-
-      - name: Setup ESP-IDF
-        uses: espressif/esp-idf-ci-action@v1.1.0
-        with:
-          esp_idf_version: ${{ steps.idf_ver.outputs.IDF_VER }}
-          python_version: ${{ steps.idf_ver.outputs.PYTHON_VER }}
-          target: esp32c3
-          command: "echo 'Skipping automatic build' "
-     # - name: Espressif IoT Development Framework (ESP-IDF)
-        # You may pin to the exact commit or the version.
-        # uses: espressif/esp-idf-ci-action@8cd22ae10042fadc37890e81e9988a9113e7b506
-      #  uses: espressif/esp-idf-ci-action@v1.1.0
-       # with:
-          # Relative path under $GITHUB_WORKSPACE to place the repository
-        #  path: # optional, default is 
-          # Version of ESP-IDF docker image to use
-         # esp_idf_version: # optional, default is latest
-          # ESP32 variant to build for
-          #target: # optional, default is esp32
-          # Command to run inside the docker container (default: builds the project)
-          #command: # optional, default is idf.py build
                    
-      #- name: Setup ESP-IDF
-       # env:
-        #  IDF_VER: ${{ steps.idf_ver.outputs.IDF_VER }}
-        #if: steps.cache-idf.outputs.cache-hit != 'true'
-        #run: |
-        #  rm -rf esp-idf
-         # git clone --depth 1 --branch $IDF_VER https://github.com/espressif/esp-idf.git
-          #git -C esp-idf submodule update --init --recursive --filter=tree:0
-          #./esp-idf/install.sh
+      - name: Setup ESP-IDF
+        env:
+          IDF_VER: ${{ steps.idf_ver.outputs.IDF_VER }}
+        if: steps.cache-idf.outputs.cache-hit != 'true'
+        run: |
+          rm -rf esp-idf
+          git clone --depth 1 --branch $IDF_VER https://github.com/espressif/esp-idf.git
+          git -C esp-idf submodule update --init --recursive --filter=tree:0
+          ./esp-idf/install.sh
 
-      #- name: Export ESP-IDF environment
-       # shell: bash
-       # env:
-        #  PATH: /usr/bin:/bin:${{ env.PATH }}
-        #run: |
-         # if ! source esp-idf/export.sh > /dev/null 2>&1; then
-          #  echo "Entorno virtual no encontrado, reinstalando..."
-           # ./esp-idf/install.sh
+      - name: Export ESP-IDF environment
+        #shell: bash
+        #env:
+         # PATH: /usr/bin:/bin:${{ env.PATH }}
+        run: |
+          source esp-idf/export.sh
+          echo "IDF_PATH=$GITHUB_WORKSPACE/esp-idf" >> $GITHUB_ENV
+          echo "PATH=$PATH" >> $GITHUB_ENV
+          echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
+          idf.py --version
+          #if ! source esp-idf/export.sh > /dev/null 2>&1; then
+           # echo "Entorno virtual no encontrado, reinstalando..."
+            #./esp-idf/install.sh
           #fi
           #echo "PATH before source: $PATH"
           #source esp-idf/export.sh
@@ -120,9 +104,9 @@ jobs:
         #  IDF_PATH: ${{ github.workspace }}/esp-idf
         #  PATH: ${{ github.workspace }}/esp-idf/tools:/usr/bin:/bin:${{ env.PATH }}
         run: |
-         # source esp-idf/export.sh
+          source esp-idf/export.sh
           export IDF_TARGET=esp32c3
-          export CCACHE_DIR="$HOME/.ccache"
+          #export CCACHE_DIR="$HOME/.ccache"
           cd ${{ github.workspace }}/micropython
           make -j$(nproc) -C mpy-cross
           make -j$(nproc) -C ports/esp32 submodules
@@ -140,3 +124,4 @@ jobs:
           path: |
             micropython/ports/esp32/build-ESP32_GENERIC_C3/firmware.bin
             micropython/ports/esp32/build-ESP32_GENERIC_C3/micropython.bin
+
