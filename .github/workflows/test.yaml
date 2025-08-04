@@ -33,13 +33,13 @@ jobs:
         with:
           python-version: ${{ steps.idf_ver.outputs.PYTHON_VER }}
 
-      - name: Cache pip dependencies
-        uses: actions/cache@v4.2.3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('micropython/tools/ci.sh') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+      #- name: Cache pip dependencies
+       # uses: actions/cache@v4.2.3
+        #with:
+         # path: ~/.cache/pip
+          #key: ${{ runner.os }}-pip-${{ hashFiles('micropython/tools/ci.sh') }}
+          #restore-keys: |
+           # ${{ runner.os }}-pip-
       
       - name: Install dependencies
         run: |
@@ -120,5 +120,6 @@ jobs:
           path: |
             micropython/ports/esp32/build-ESP32_GENERIC_C3/firmware.bin
             micropython/ports/esp32/build-ESP32_GENERIC_C3/micropython.bin
+
 
 
