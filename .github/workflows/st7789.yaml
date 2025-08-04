@@ -69,19 +69,21 @@ jobs:
           echo "IDF_PATH=$GITHUB_WORKSPACE/esp-idf" >> $GITHUB_ENV
           idf.py --version
 
-      - name: Add integrated ST7789 driver
+      - name: Add ST7789 library from russhughes
         run: |
-          mkdir -p micropython/ports/esp32/modules
+          git clone --depth 1 https://github.com/russhughes/st7789_mpy.git
+          mkdir -p micropython/drivers/st7789
+          cp st7789_mpy/st7789.c micropython/drivers/st7789/
+          cp st7789_mpy/st7789.h micropython/drivers/st7789/
+          cp st7789_mpy/mpfile.c micropython/drivers/st7789/
+          cp st7789_mpy/mpfile.h micropython/drivers/st7789/
           
-          # Agregar el controlador st7789 integrado al manifest
-          echo "freeze('$(pwd)/micropython/drivers/display', 'st7789.py')" >> micropython/ports/esp32/manifest.py
+          # Agregar el driver al Makefile
+          echo "DRIVERS_EXTRA = drivers/st7789" >> micropython/ports/esp32/mpconfigport.mk
           
-          # (Opcional) Agregar otros controladores relacionados
-          echo "freeze('$(pwd)/micropython/drivers/display', 'st77xx.py')" >> micropython/ports/esp32/manifest.py
-          
-          # (Opcional) Agregar fuentes básicas
-          echo "freeze('$(pwd)/micropython/drivers/font', 'font_petme128_8x8.py')" >> micropython/ports/esp32/manifest.py
-          echo "freeze('$(pwd)/micropython/drivers/font', 'font_petme128_16x16.py')" >> micropython/ports/esp32/manifest.py
+          # Configurar opciones necesarias
+          echo "CFLAGS_EXTRA += -DMODULE_ST7789_ENABLED=1" >> micropython/ports/esp32/mpconfigport.mk
+          echo "CFLAGS_EXTRA += -DMICROPY_PY_FRAMEBUF=1" >> micropython/ports/esp32/mpconfigport.mk
           
       - name: Build mpy-cross and ESP32-C3 port
         run: |
@@ -94,6 +96,9 @@ jobs:
       - name: Verify build artifacts
         run: |
           ls -lh micropython/ports/esp32/build-ESP32_GENERIC_C3/*.bin
+          ls -lh micropython/ports/esp32/build-ESP32_GENERIC_C3/bootloader/*.bin
+          ls -lh micropython/ports/esp32/build-ESP32_GENERIC_C3/partition_table/*.bin
+          
 
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4.6.2
@@ -101,4 +106,6 @@ jobs:
           name: esp32c3-firmware
           path: |
             micropython/ports/esp32/build-ESP32_GENERIC_C3/firmware.bin
+            micropython/ports/esp32/build-ESP32_GENERIC_C3/bootloader/bootloader.bin
+            micropython/ports/esp32/build-ESP32_GENERIC_C3/partition_table/partition-table.bin
             micropython/ports/esp32/build-ESP32_GENERIC_C3/micropython.bin
