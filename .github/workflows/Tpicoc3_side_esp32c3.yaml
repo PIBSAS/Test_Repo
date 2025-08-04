@@ -26,11 +26,11 @@ jobs:
     - name: Clone st7789_mpy
       run: git clone --recursive https://github.com/russhughes/st7789_mpy.git
 
-    - name: Copiar módulos Python a frozen modules
-      run: |
-        mkdir -p micropython/ports/esp32/modules
-        cp st7789_mpy/examples/configs/t-picoc3/tft_config.py micropython/ports/esp32/modules/
-        cp st7789_mpy/examples/configs/tdisplay_rp2040/tft_buttons.py micropython/ports/esp32/modules/
+    #- name: Copiar módulos Python a frozen modules
+     # run: |
+      #  mkdir -p micropython/ports/esp32/modules
+       # cp st7789_mpy/examples/configs/t-picoc3/tft_config.py micropython/ports/esp32/modules/
+       # cp st7789_mpy/examples/configs/tdisplay_rp2040/tft_buttons.py micropython/ports/esp32/modules/
 
     - name: Install dependencies
       run: |
