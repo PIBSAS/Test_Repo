@@ -1,0 +1,79 @@
+name: Build ESP32-C3 MicroPython
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-esp32-c3:
+    runs-on: ubuntu-latest
+    env:
+      IDF_CCACHE_ENABLE: 1
+      MAKEOPTS: "-j$(nproc)"
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      
+      - id: idf_ver
+        name: Read ESP-IDF and Python version from tools/ci.sh
+        run: |
+          source micropython/tools/ci.sh
+          echo "IDF_VER=${IDF_VER}" | tee -a "$GITHUB_OUTPUT"
+          echo "PYTHON_VER=${PYTHON_VER}" | tee -a "$GITHUB_OUTPUT"
+          # echo "IDF_VER=${IDF_VER}-py${PYTHON_VER}" | tee "$GITHUB_OUTPUT"
+      
+      - name: Setup Python from ci.sh
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ steps.idf_ver.outputs.PYTHON_VER }}
+      
+      - name: Setup ESP-IDF
+        env:
+          IDF_VER: ${{ steps.idf_ver.outputs.IDF_VER }}
+        if: steps.cache-idf.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch $IDF_VER https://github.com/espressif/esp-idf.git
+          git -C esp-idf submodule update --init --recursive --filter=tree:0
+          ./esp-idf/install.sh
+
+      - name: Export ESP-IDF environment
+        run: |
+          source esp-idf/export.sh
+          env
+
+      - name: Cache esp-idf
+        id: cache-idf
+        uses: actions/cache@v3
+        with:
+          path: esp-idf
+          key: esp-idf-${{ env.IDF_VER }}
+          restore-keys: |
+            esp-idf-
+
+      - name: Cache ccache
+        uses: actions/cache@v3
+        with:
+          path: ~/.ccache
+          key: ccache-${{ runner.os }}-${{ hashFiles('**/tools/ci.sh') }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git wget make cmake ninja-build ccache gcc g++ python3-pip python3-setuptools python3-venv
+          pip3 install --upgrade pip
+          pip3 install pyelftools ar
+
+      - name: Build mpy-cross and ESP32-C3 port
+        env:
+          IDF_PATH: ${{ github.workspace }}/esp-idf
+          PATH: ${{ github.workspace }}/esp-idf/tools:$PATH
+          MAKEOPTS: "-j$(nproc)"
+        run: |
+          source esp-idf/export.sh
+          make $MAKEOPTS -C mpy-cross
+          make $MAKEOPTS -C ports/esp32 submodules
+          make $MAKEOPTS -C ports/esp32 BOARD=ESP32_GENERIC_C3
