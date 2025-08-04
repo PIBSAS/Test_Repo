@@ -26,11 +26,11 @@ jobs:
     - name: Clone st7789_mpy
       run: git clone --recursive https://github.com/russhughes/st7789_mpy.git
 
-    #- name: Copiar módulos Python a frozen modules
-     # run: |
-      #  mkdir -p micropython/ports/esp32/modules
-       # cp st7789_mpy/examples/configs/t-picoc3/tft_config.py micropython/ports/esp32/modules/
-       # cp st7789_mpy/examples/configs/tdisplay_rp2040/tft_buttons.py micropython/ports/esp32/modules/
+    - name: Copiar módulos Python a frozen modules
+      run: |
+        mkdir -p micropython/ports/esp32/modules
+        cp st7789_mpy/examples/configs/t-picoc3/tft_config.py micropython/ports/esp32/modules/
+        cp st7789_mpy/examples/configs/tdisplay_rp2040/tft_buttons.py micropython/ports/esp32/modules/
 
     - name: Install dependencies
       run: |
@@ -48,6 +48,9 @@ jobs:
         ./install.sh esp32c3
         cd
 
+    - name: Copiar particiones personalizadas
+      run: cp "$GITHUB_WORKSPACE/partitions.csv" "$GITHUB_WORKSPACE/micropython/ports/esp32/boards/my_partitions.csv"
+
     - name: Compilar MicroPython
       run: |
         source esp/esp-idf/export.sh
@@ -56,7 +59,8 @@ jobs:
         export IDF_TARGET=esp32c3
         cd ports/esp32/
         idf.py -D MICROPY_BOARD=ESP32_GENERIC_C3 \
-               -D MICROPY_BOARD_DIR="$GITHUB_WORKSPACE/micropython/ports/esp32/boards/ESP32_GENERIC_C3" \
+               -D MICROPY_BOARD_DIR="boards/ESP32_GENERIC_C3" \
+               -D MICROPY_BOARD_PARTITION_CSV=boards/my_partitions.csv \
                -D USER_C_MODULES="$GITHUB_WORKSPACE/st7789_mpy/st7789" \
                -B build-ESP32_GENERIC_C3 build
  
