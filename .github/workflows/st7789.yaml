@@ -125,14 +125,14 @@ jobs:
           cd ${{ github.workspace }}/micropython
           make -j$(nproc) -C mpy-cross
           make -j$(nproc) -C ports/esp32 submodules
-          make -j$(nproc) -C ports/esp32 USER_C_MODULES=${{ github.workspace }}/st7789_mpy/st7789/micropython.cmake BOARD=CUSTOM_ESP32C3
-          make -j$(nproc) -C ports/esp32 BOARD=CUSTOM_ESP32C3
+          make -j$(nproc) -C ports/esp32 USER_C_MODULES=${{ github.workspace }}/st7789_mpy/st7789/micropython.cmake BOARD=ESP32_C3_CUSTOM
+          make -j$(nproc) -C ports/esp32 BOARD=ESP32_C3_CUSTOM
           
       - name: Verify build artifacts
         run: |
-          ls -lh micropython/ports/esp32/build-CUSTOM_ESP32C3/*.bin
-          ls -lh micropython/ports/esp32/build-CUSTOM_ESP32C3/bootloader/*.bin
-          ls -lh micropython/ports/esp32/build-CUSTOM_ESP32C3/partition_table/*.bin
+          ls -lh micropython/ports/esp32/build-ESP32_C3_CUSTOM/*.bin
+          ls -lh micropython/ports/esp32/build-ESP32_C3_CUSTOM/bootloader/*.bin
+          ls -lh micropython/ports/esp32/build-ESP32_C3_CUSTOM/partition_table/*.bin
           
 
       - name: Upload firmware artifacts
@@ -140,7 +140,7 @@ jobs:
         with:
           name: esp32c3-firmware
           path: |
-            micropython/ports/esp32/build-CUSTOM_ESP32C3/firmware.bin
-            micropython/ports/esp32/build-CUSTOM_ESP32C3/bootloader/bootloader.bin
-            micropython/ports/esp32/build-CUSTOM_ESP32C3/partition_table/partition-table.bin
-            micropython/ports/esp32/build-CUSTOM_ESP32C3/micropython.bin
+            micropython/ports/esp32/build-ESP32_C3_CUSTOM/firmware.bin
+            micropython/ports/esp32/build-ESP32_C3_CUSTOM/bootloader/bootloader.bin
+            micropython/ports/esp32/build-ESP32_C3_CUSTOM/partition_table/partition-table.bin
+            micropython/ports/esp32/build-ESP32_C3_CUSTOM/micropython.bin
