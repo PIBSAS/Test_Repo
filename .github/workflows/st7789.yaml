@@ -79,35 +79,46 @@ jobs:
           echo "freeze('modules', 'tft_config.py')" >> micropython/ports/esp32/manifest.py
           echo "freeze('modules', '*.py')" >> micropython/ports/esp32/manifest.py
 
-      - name: Create custom partition table
+      - name: Configure custom build
         run: |
-          cat > micropython/ports/esp32/partitions_custom.csv <<EOF
-          # Custom partition table for ST7789 driver (based on partitions-4MiBplus.csv)
+          cd ${{ github.workspace }}/micropython/ports/esp32
+          
+          # Crear directorio para configuración personalizada
+          mkdir -p boards/ESP32_C3_CUSTOM
+          
+          # Copiar configuración base
+          cp boards/ESP32_GENERIC_C3/* boards/ESP32_C3_CUSTOM/
+          
+          # Crear archivo de configuración personalizado
+          cat > boards/ESP32_C3_CUSTOM/mpconfigvariant.cmake <<EOF
+          set(IDF_TARGET esp32c3)
+          
+          set(SDKCONFIG_DEFAULTS
+              boards/sdkconfig.base
+              boards/sdkconfig.ble
+              boards/sdkconfig.spiram
+              boards/ESP32_C3_CUSTOM/sdkconfig.board
+          )
+          
+          set(PARTITION_TABLE_CSV "partitions-4MB.csv")
+          EOF
+          
+          # Crear sdkconfig.board personalizado
+          cat > boards/ESP32_C3_CUSTOM/sdkconfig.board <<EOF
+          CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+          CONFIG_PARTITION_TABLE_CUSTOM=y
+          CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-4MB.csv"
+          EOF
+          
+          # Crear tabla de particiones personalizada
+          cat > boards/ESP32_C3_CUSTOM/partitions-4MB.csv <<EOF
           # Name,   Type, SubType, Offset,  Size, Flags
           nvs,      data, nvs,     0x9000,  0x6000,
           phy_init, data, phy,     0xf000,  0x1000,
           factory,  app,  factory, 0x10000, 0x220000,
           vfs,      data, spiffs,  ,        0x1D0000,
           EOF
-
-      - name: Configure board for custom partition
-        run: |
-          # Crear directorio de configuración para nuestra placa
-          mkdir -p micropython/ports/esp32/boards/CUSTOM_ESP32C3
           
-          # Copiar configuración base
-          cp micropython/ports/esp32/boards/ESP32_GENERIC_C3/mpconfigboard.cmake micropython/ports/esp32/boards/CUSTOM_ESP32C3/
-          cp micropython/ports/esp32/boards/ESP32_GENERIC_C3/mpconfigboard.h micropython/ports/esp32/boards/CUSTOM_ESP32C3/
-          
-          # Modificar mpconfigboard.cmake para usar nuestra tabla
-          echo 'set(PARTITION_TABLE_CSV "partitions_custom.csv")' >> micropython/ports/esp32/boards/CUSTOM_ESP32C3/mpconfigboard.cmake
-          echo 'set(SDKCONFIG_DEFAULTS "${SDKCONFIG_DEFAULTS}")' >> micropython/ports/esp32/boards/CUSTOM_ESP32C3/mpconfigboard.cmake
-
-      # Copiar nuestra tabla a la carpeta de la nueva placa
-      - name: Copy partition table to board directory
-        run: |
-          cp micropython/ports/esp32/partitions_custom.csv micropython/ports/esp32/boards/CUSTOM_ESP32C3/
-      
       - name: Build mpy-cross and ESP32-C3 port
         run: |
           source esp-idf/export.sh
