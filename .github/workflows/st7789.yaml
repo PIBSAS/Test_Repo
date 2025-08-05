@@ -100,14 +100,14 @@ jobs:
               boards/ESP32_C3_CUSTOM/sdkconfig.board
           )
           
-          set(PARTITION_TABLE_CSV "partitions-4MB.csv")
+          set(PARTITION_TABLE_CSV "\${MICROPY_PORT_DIR}/boards/ESP32_C3_CUSTOM/partitions-4MB.csv")
           EOF
           
           # Crear sdkconfig.board personalizado
           cat > boards/ESP32_C3_CUSTOM/sdkconfig.board <<EOF
           CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
           CONFIG_PARTITION_TABLE_CUSTOM=y
-          CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-4MB.csv"
+          CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="boards/ESP32_C3_CUSTOM/partitions-4MB.csv"
           EOF
           
           # Crear tabla de particiones personalizada
