@@ -89,6 +89,24 @@ jobs:
           factory,  app,  factory, 0x10000, 0x220000,
           vfs,      data, spiffs,  ,        0x1D0000,
           EOF
+
+      - name: Configure board for custom partition
+        run: |
+          # Crear directorio de configuración para nuestra placa
+          mkdir -p micropython/ports/esp32/boards/CUSTOM_ESP32C3
+          
+          # Copiar configuración base
+          cp micropython/ports/esp32/boards/ESP32_GENERIC_C3/mpconfigboard.cmake micropython/ports/esp32/boards/CUSTOM_ESP32C3/
+          cp micropython/ports/esp32/boards/ESP32_GENERIC_C3/mpconfigboard.h micropython/ports/esp32/boards/CUSTOM_ESP32C3/
+          
+          # Modificar mpconfigboard.cmake para usar nuestra tabla
+          echo 'set(PARTITION_TABLE_CSV "partitions_custom.csv")' >> micropython/ports/esp32/boards/CUSTOM_ESP32C3/mpconfigboard.cmake
+          echo 'set(SDKCONFIG_DEFAULTS "${SDKCONFIG_DEFAULTS}")' >> micropython/ports/esp32/boards/CUSTOM_ESP32C3/mpconfigboard.cmake
+
+      # Copiar nuestra tabla a la carpeta de la nueva placa
+      - name: Copy partition table to board directory
+        run: |
+          cp micropython/ports/esp32/partitions_custom.csv micropython/ports/esp32/boards/CUSTOM_ESP32C3/
       
       - name: Build mpy-cross and ESP32-C3 port
         run: |
@@ -96,14 +114,14 @@ jobs:
           cd ${{ github.workspace }}/micropython
           make -j$(nproc) -C mpy-cross
           make -j$(nproc) -C ports/esp32 submodules
-          make -j$(nproc) -C ports/esp32 USER_C_MODULES=${{ github.workspace }}/st7789_mpy/st7789/micropython.cmake BOARD=ESP32_GENERIC_C3 PARTITION_TABLE_CSV="partitions_custom.csv"
-          make -j$(nproc) -C ports/esp32 BOARD=ESP32_GENERIC_C3
+          make -j$(nproc) -C ports/esp32 USER_C_MODULES=${{ github.workspace }}/st7789_mpy/st7789/micropython.cmake BOARD=CUSTOM_ESP32C3
+          make -j$(nproc) -C ports/esp32 BOARD=CUSTOM_ESP32C3
           
       - name: Verify build artifacts
         run: |
-          ls -lh micropython/ports/esp32/build-ESP32_GENERIC_C3/*.bin
-          ls -lh micropython/ports/esp32/build-ESP32_GENERIC_C3/bootloader/*.bin
-          ls -lh micropython/ports/esp32/build-ESP32_GENERIC_C3/partition_table/*.bin
+          ls -lh micropython/ports/esp32/build-CUSTOM_ESP32C3/*.bin
+          ls -lh micropython/ports/esp32/build-CUSTOM_ESP32C3/bootloader/*.bin
+          ls -lh micropython/ports/esp32/build-CUSTOM_ESP32C3/partition_table/*.bin
           
 
       - name: Upload firmware artifacts
@@ -111,7 +129,7 @@ jobs:
         with:
           name: esp32c3-firmware
           path: |
-            micropython/ports/esp32/build-ESP32_GENERIC_C3/firmware.bin
-            micropython/ports/esp32/build-ESP32_GENERIC_C3/bootloader/bootloader.bin
-            micropython/ports/esp32/build-ESP32_GENERIC_C3/partition_table/partition-table.bin
-            micropython/ports/esp32/build-ESP32_GENERIC_C3/micropython.bin
+            micropython/ports/esp32/build-CUSTOM_ESP32C3/firmware.bin
+            micropython/ports/esp32/build-CUSTOM_ESP32C3/bootloader/bootloader.bin
+            micropython/ports/esp32/build-CUSTOM_ESP32C3/partition_table/partition-table.bin
+            micropython/ports/esp32/build-CUSTOM_ESP32C3/micropython.bin
