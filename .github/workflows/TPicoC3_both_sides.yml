@@ -69,8 +69,13 @@ jobs:
         echo "IDF_PATH=$GITHUB_WORKSPACE/esp-idf" >> $GITHUB_ENV
         idf.py --version
     
-    - name: Build mpy-cross
-      run: make -C micropython/mpy-cross -j$(nproc)
+    - name: Build ESP32-C3 port
+      run: |
+        source esp-idf/export.sh
+        cd ${{ github.workspace }}/micropython
+        make -j$(nproc) -C mpy-cross
+        make -j$(nproc) -C ports/esp32 submodules
+        make -j$(nproc) -C ports/esp32 BOARD=ESP32_GENERIC_C3
     
     - name: Clone st7789_mpy && TPicoESPC3
       run: |
@@ -131,13 +136,6 @@ jobs:
     - name: Copy TPicoESPC3 like frozen module
       run: |
         cp $GITHUB_WORKSPACE/TPicoESPC3/TPicoESPC3.py $GITHUB_WORKSPACE/micropython/ports/rp2/modules/
-
-    - name: Build ESP32-C3 port
-      run: |
-        source esp-idf/export.sh
-        cd ${{ github.workspace }}/micropython
-        make -j$(nproc) BOARD=ESP32_GENERIC_C3 submodules
-        make -j$(nproc) -C ports/esp32 BOARD=ESP32_GENERIC_C3
 
     - name: Build MicroPython for RP2040
       run: |
