@@ -15,69 +15,129 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    env:
+      IDF_CCACHE_ENABLE: 1
     steps:
     - name: Clone Micropython
-      run: git clone --recurse-submodules https://github.com/micropython/micropython.git
+      run: git clone --depth 1 https://github.com/micropython/micropython.git
 
-    - name: Clone st7789_mpy
-      run: git clone https://github.com/russhughes/st7789_mpy.git
-
-    - name: Clone TPicoESPC3
-      run: git clone https://github.com/PIBSAS/TPicoESPC3.git
-
-    - name: Copy tdt_config and some fonts like frozen modules
+    - id: idf_ver
+      name: Read ESP-IDF and Python version from tools/ci.sh
       run: |
-        cp "$GITHUB_WORKSPACE/st7789_mpy/examples/configs/t-picoc3/tft_config.py" "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-        cp "$GITHUB_WORKSPACE/st7789_mpy/examples/configs/tdisplay_rp2040/tft_buttons.py" "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-        cp $GITHUB_WORKSPACE/st7789_mpy/examples/chango/chango_16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/st7789_mpy/examples/chango/chango_32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      # cp $GITHUB_WORKSPACE/st7789_mpy/examples/chango/chango_64.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/astrol.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/gotheng.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/greekc.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/italict.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/lowmat.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/marker.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/music.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/romancs.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga1_8x8.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga1_8x16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga1_16x16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-      #cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga1_16x32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
-           
+        source micropython/tools/ci.sh
+        echo "IDF_VER=${IDF_VER}" | tee -a "$GITHUB_OUTPUT"
+        echo "PYTHON_VER=${PYTHON_VER}" | tee -a "$GITHUB_OUTPUT"
+      
+    - name: Setup Python from ci.sh
+      uses: actions/setup-python@v5.6.0
+      with:
+        python-version: ${{ steps.idf_ver.outputs.PYTHON_VER }}
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y git wget cmake ninja-build ccache gcc-arm-none-eabi libssl-dev build-essential libffi-dev git pkg-config
+        pip3 install --upgrade pip
+        pip3 install pyelftools ar
+      
+    - name: Cache ESP-IDF and environment
+      id: cache-esp
+      uses: actions/cache@v4.2.3
+      with:
+        path: |
+          esp-idf
+          ~/.espressif
+        key: esp-full-${{ runner.os }}-${{ steps.idf_ver.outputs.IDF_VER }}-${{ hashFiles('micropython/tools/ci.sh') }}
+        restore-keys: |
+          esp-full-${{ runner.os }}-${{ steps.idf_ver.outputs.IDF_VER }}-
+      
+    - name: Setup ESP-IDF
+      run: |
+        if [ ! -d "esp-idf" ]; then
+          git clone --depth 1 --branch ${{ steps.idf_ver.outputs.IDF_VER }} https://github.com/espressif/esp-idf.git
+          git -C esp-idf submodule update --init --recursive --depth=1
+        fi
+        
+        if [ ! -d "$HOME/.espressif/python_env" ]; then
+          echo "Instalando entorno virtual de ESP-IDF..."
+          ./esp-idf/install.sh
+        fi
+   
+    - name: Set up environment
+      run: |
+        source esp-idf/export.sh
+        echo "IDF_PATH=$GITHUB_WORKSPACE/esp-idf" >> $GITHUB_ENV
+        idf.py --version
+    
+    - name: Build mpy-cross
+      run: make -C micropython/mpy-cross -j$(nproc)
+    
+    - name: Clone st7789_mpy && TPicoESPC3
+      run: |
+        git clone https://github.com/russhughes/st7789_mpy.git
+        git clone https://github.com/PIBSAS/TPicoESPC3.git
+
+    - name: Copy tft_config, tft_buttons and some fonts like frozen modules
+      run: |
+       ls -R $GITHUB_WORKSPACE/st7789_mpy/
+       cp "$GITHUB_WORKSPACE/st7789_mpy/examples/configs/t-picoc3/tft_config.py" "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+       cp "$GITHUB_WORKSPACE/st7789_mpy/examples/configs/tdisplay_rp2040/tft_buttons.py" "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+       cp $GITHUB_WORKSPACE/st7789_mpy/examples/chango/chango_16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+       cp $GITHUB_WORKSPACE/st7789_mpy/examples/chango/chango_32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+       cp $GITHUB_WORKSPACE/st7789_mpy/examples/chango/chango_64.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/astrol.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/gotheng.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/greekc.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/italict.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/lowmat.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/marker.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/music.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/romancs.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga1_8x8.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga1_8x16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga1_16x16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga1_16x32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga1_bold_16x16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga1_bold_16x32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+       cp $GITHUB_WORKSPACE/st7789_mpy/fonts/truetype/NotoSerif_32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/examples/chango/chango.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/truetype/NotoSans_32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/truetype/NotoSansMono_32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga2_8x8.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga2_8x16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga2_16x16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga2_16x32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga2_bold_16x16.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/bitmap/vga2_bold_16x32.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/cyrilc.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/gothger.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/gothita.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/greekcs.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/greekp.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/greeks.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/italcc.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/italiccs.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/meteo.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/romanc.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/romand.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/romanp.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/romans.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/romant.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/scriptc.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/scripts.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/symbol.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+      # cp $GITHUB_WORKSPACE/st7789_mpy/fonts/vector/uppmat.py "$GITHUB_WORKSPACE/micropython/ports/rp2/modules/"
+       
     - name: Copy TPicoESPC3 like frozen module
       run: |
         cp $GITHUB_WORKSPACE/TPicoESPC3/TPicoESPC3.py $GITHUB_WORKSPACE/micropython/ports/rp2/modules/
 
-    - name: Install dependencies
+    - name: Build ESP32-C3 port
       run: |
-       sudo apt-get update
-       sudo apt-get install -y gcc-arm-none-eabi libssl-dev python3 python3-pip python3-venv build-essential libffi-dev git pkg-config wget flex bison gperf cmake ninja-build ccache dfu-util libusb-1.0-0
+        source esp-idf/export.sh
+        cd ${{ github.workspace }}/micropython
+        make -j$(nproc) -C ports/esp32 BOARD=ESP32_GENERIC_C3
 
-    - name: Clone ESP-IDF
-      run: |
-        mkdir -p esp
-        cd esp
-        git clone -b v5.4.2 --recursive https://github.com/espressif/esp-idf.git
-        cd esp-idf/tools
-        python3 idf_tools.py install cmake
-        cd ..
-        ./install.sh esp32c3
-        cd
-     
-    - name: Build MicroPython for ESP32-C3
-      run: |
-        source esp/esp-idf/export.sh
-        cd micropython
-        make -C mpy-cross
-        export IDF_TARGET=esp32c3
-        cd ports/esp32
-        idf.py -D MICROPY_BOARD=ESP32_GENERIC_C3 \
-               -D MICROPY_BOARD_DIR="$GITHUB_WORKSPACE/micropython/ports/esp32/boards/ESP32_GENERIC_C3" \
-               -D USER_C_MODULES="$GITHUB_WORKSPACE/st7789_mpy/st7789/micropython.cmake" \
-               -B build-ESP32_GENERIC_C3 build
-    
     - name: Build MicroPython for RP2040
       run: |
         cd micropython
@@ -87,14 +147,29 @@ jobs:
         make submodules
         make
 
-    - name: Move firmwares files to artifacts
+    - name: Verify build artifacts
       run: |
-        mkdir -p ./artifacts
-        cp micropython/ports/rp2/build-RPI_PICO/*.uf2 ./artifacts/T-PicoC3.uf2
-        cp micropython/ports/esp32/build-ESP32_GENERIC_C3/micropython.bin ./artifacts/micropython.bin || true
-        cp micropython/ports/esp32/build-ESP32_GENERIC_C3/bootloader/bootloader.bin ./artifacts/bootloader.bin || true
-        cp micropython/ports/esp32/build-ESP32_GENERIC_C3/partition_table/partition-table.bin ./artifacts/partition-table.bin || true
-        
+        ls -lh micropython/ports/esp32/build-ESP32_GENERIC_C3/*.bin
+        ls -lh micropython/ports/esp32/build-ESP32_GENERIC_C3/bootloader/*.bin
+        ls -lh micropython/ports/esp32/build-ESP32_GENERIC_C3/partition_table/*.bin
+        ls -lh micropython/ports/rp2/build-RPI_PICO/*.uf2
+    
+    - name: Prepare artifacts for release
+      run: |
+        mkdir -p artifacts
+        cp micropython/ports/esp32/build-ESP32_GENERIC_C3/firmware.bin artifacts/
+        cp micropython/ports/esp32/build-ESP32_GENERIC_C3/micropython.bin artifacts/
+        cp micropython/ports/esp32/build-ESP32_GENERIC_C3/bootloader/bootloader.bin artifacts/
+        cp micropython/ports/esp32/build-ESP32_GENERIC_C3/partition_table/partition-table.bin artifacts/
+        cp micropython/ports/rp2/build-RPI_PICO/*.uf2 artifacts/T-PicoC3.uf2
+  
+    - name: Verificar existencia de los 5 binarios
+      run: |
+        if [ ! -f ./artifacts/T-PicoC3.uf2 ] || [ ! -f ./artifacts/firmware.bin ] || [ ! -f ./artifacts/micropython.bin ] || [ ! -f ./artifacts/bootloader.bin ] || [ ! -f ./artifacts/partition-table.bin ]; then
+          echo "Falta uno o más archivos binarios necesarios, cancelando release."
+          exit 1
+        fi
+   
     - name: Get MicroPython Version from mpconfig.h
       run: |
         cd micropython/
@@ -110,34 +185,11 @@ jobs:
         fi
 
         echo "MPY_VERSION=$MPY_VERSION" >> $GITHUB_ENV
-        
+
     - name: Generate Tag
       id: tag
       run: echo "TAG_NAME=release-$(date +'%Y%m%d-%H%M')" >> $GITHUB_ENV
-
-    - name: Validar tamaños de binarios por nombre
-      run: |
-        check_size() {
-          FILE=$1
-          MAX_BYTES=$2
-          if [ -f "$FILE" ]; then
-            SIZE=$(stat -c%s "$FILE")
-            if [ "$SIZE" -gt "$MAX_BYTES" ]; then
-              echo "::error::El archivo $FILE es demasiado grande ($(du -h "$FILE" | cut -f1))"
-              exit 1
-            else
-              echo "$FILE ok ($(du -h "$FILE" | cut -f1))"
-            fi
-          else
-            echo "::warning::El archivo $FILE no existe, se omite"
-          fi
-        }
     
-        check_size ./artifacts/micropython.bin $((2 * 1024 * 1024))       # 2MB
-        check_size ./artifacts/bootloader.bin $((128 * 1024))            # 128KB
-        check_size ./artifacts/partition-table.bin $((16 * 1024))        # 16KB
-        check_size ./artifacts/T-PicoC3.uf2 $((2 * 1024 * 1024))         # 2MB
-        
     - name: GH Release
       uses: softprops/action-gh-release@v2.0.8
       with:
@@ -235,6 +287,18 @@ jobs:
           Set-ExecutionPolicy Unrestricted
           ````
           - Close the Terminal now you can activate the Python Virtual Enmvironment
+
+          ## How to Flash the Firmware on T-Pico C3 Display Side
+          ### Windows, Linux:
+          1. Download the .uf2 file from the release.
+          2. Press and hold the BOOT button on the RP2040 and press RESET button or connect it to your computer via USB.
+          3. Release the button. The RP2040  will appear as a removable drive.
+          4. Drag and drop the .uf2 file onto the drive..
+          5. The RP2040 will reboot and run MicroPython..
+          ## Examples Usage
+          Please use the examples located in the [examples folder of the st7789_mpy repository](https://github.com/russhughes/st7789_mpy/tree/master/examples).
+          
+          New Examples in [TPicoESPC3 module repo](https://github.com/PIBSAS/TPicoESPC3/tree/main/examples) and remake to micropython vendor's codes.
           
         draft: false
         prerelease: false
