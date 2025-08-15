@@ -19,7 +19,7 @@ jobs:
       IDF_CCACHE_ENABLE: 1
     steps:
     - name: Clone Micropython
-      run: git clone --depth 1 https://github.com/micropython/micropython.git
+      run: git clone --recurse-submodules https://github.com/micropython/micropython.git
 
     - id: idf_ver
       name: Read ESP-IDF and Python version from tools/ci.sh
